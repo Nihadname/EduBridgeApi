@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\LearningManagementSystem.Core\LearningManagementSystem.Core.csproj" />
-  </ItemGroup>
-
 </Project>
