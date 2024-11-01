@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LearningManagementSystem.Da
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LearningManagementSystem.Api", "LearningManagementSystem.Api\LearningManagementSystem.Api.csproj", "{18FC4CBA-F521-41E3-A5E8-3577DF87ACF8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LearningManagementSystem.Core", "LearningManagementSystem.Core\LearningManagementSystem.Core.csproj", "{784ABDE1-C91D-4C37-ABF5-6FB399C62FA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{18FC4CBA-F521-41E3-A5E8-3577DF87ACF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18FC4CBA-F521-41E3-A5E8-3577DF87ACF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18FC4CBA-F521-41E3-A5E8-3577DF87ACF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{784ABDE1-C91D-4C37-ABF5-6FB399C62FA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{784ABDE1-C91D-4C37-ABF5-6FB399C62FA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{784ABDE1-C91D-4C37-ABF5-6FB399C62FA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{784ABDE1-C91D-4C37-ABF5-6FB399C62FA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
