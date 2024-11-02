@@ -1,7 +1,16 @@
 using LearningManagementSystem.Api;
+using LearningManagementSystem.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 // Add services to the container.
 var config=builder.Configuration;
 builder.Services.AddControllers();
@@ -19,6 +28,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAllOrigins");
+app.UseMiddleware<CustomExceptionMiddleware>();
 
 app.UseAuthorization();
 
