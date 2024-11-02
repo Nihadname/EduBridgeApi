@@ -13,7 +13,14 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {
-            throw new NotImplementedException();
+            builder.Property(s => s.UserName).HasMaxLength(100).IsRequired(true);
+            builder.Property(s => s.fullName).HasMaxLength(150).IsRequired(true);
+            builder.Property(s => s.Email).IsRequired()
+            .HasMaxLength(255)
+            .HasAnnotation("RegularExpression",
+                           @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            builder.Property(s => s.IsBlocked).HasDefaultValue(false);
+            
         }
     }
 }
