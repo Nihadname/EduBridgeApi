@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using LearningManagementSystem.Application.Implementations;
+using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Profiles;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Application.Validators.AuthValidators;
@@ -118,6 +120,8 @@ namespace LearningManagementSystem.Api
             });
             services.AddScoped<ICourseRepository,CourseRepository>();
             services.AddScoped<IUnitOfWork,UnitOfWork>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITokenService, TokenService>();
         }
     }
 }
