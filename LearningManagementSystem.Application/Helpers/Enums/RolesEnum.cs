@@ -9,6 +9,7 @@ namespace LearningManagementSystem.Application.Helpers.Enums
     public enum RolesEnum
     {
         Admin,
-    
+    Student,
+    Teacher
     }
 }

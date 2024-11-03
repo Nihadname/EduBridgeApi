@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Core.Entities;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,9 @@ namespace LearningManagementSystem.Application.Profiles
 
         public MapperProfile(IHttpContextAccessor contextAccessor)
         {
+      
             _contextAccessor = contextAccessor;
+            CreateMap<AppUser, UserGetDto>();
         }
     }
 }
