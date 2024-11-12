@@ -20,7 +20,10 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             .HasAnnotation("RegularExpression",
                            @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
             builder.Property(s => s.IsBlocked).HasDefaultValue(false);
-            
+            builder.Property(s => s.BirthDate).IsRequired(true);
+            builder.HasCheckConstraint("CK_User_MinimumAge", "DATEDIFF(YEAR, BirthDate, GETDATE()) >= 15");
+
+
         }
     }
 }

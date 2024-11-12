@@ -66,6 +66,7 @@ namespace LearningManagementSystem.Application.Implementations
                 throw new CustomException(400, "PhoneNumber", "PhoneNumber already exists ");
 
             }
+            
             AppUser appUser = new AppUser();
             appUser.UserName = registerDto.UserName;
             appUser.Email = registerDto.Email;

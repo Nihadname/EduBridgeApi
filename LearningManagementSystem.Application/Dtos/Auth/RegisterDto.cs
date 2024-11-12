@@ -14,5 +14,7 @@ namespace LearningManagementSystem.Application.Dtos.Auth
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
         public string RepeatPassword { get; set; }
+        public DateTime BirthDate { get; set; }
+
     }
 }
