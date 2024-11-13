@@ -17,6 +17,8 @@ namespace LearningManagementSystem.DataAccess.Data
         {
         }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<Address> addresses { get; set; }
+        public DbSet<Student> students { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearningManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241103114815_Initial")]
+    [Migration("20241113185219_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,6 +25,58 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("LearningManagementSystem.Core.Entities.Address", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(90)
+                        .HasColumnType("nvarchar(90)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<DateTime?>("CreatedTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(90)
+                        .HasColumnType("nvarchar(90)");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(90)
+                        .HasColumnType("nvarchar(90)");
+
+                    b.Property<DateTime?>("UpdatedTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId")
+                        .IsUnique()
+                        .HasFilter("[AppUserId] IS NOT NULL");
+
+                    b.ToTable("addresses");
+                });
+
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -32,6 +84,9 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("BlockedUntil")
                         .HasColumnType("datetime2");
@@ -112,36 +167,75 @@ namespace LearningManagementSystem.DataAccess.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("AspNetUsers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_User_MinimumAge", "DATEDIFF(YEAR, BirthDate, GETDATE()) >= 15");
+                        });
                 });
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Course", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreatedTime")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedTime")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(110)
+                        .HasColumnType("nvarchar(110)");
 
                     b.Property<DateTime?>("UpdatedTime")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
                     b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("LearningManagementSystem.Core.Entities.Student", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("AvarageScore")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("CreatedTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("UpdatedTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("students");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -277,6 +371,15 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("LearningManagementSystem.Core.Entities.Address", b =>
+                {
+                    b.HasOne("LearningManagementSystem.Core.Entities.AppUser", "appUser")
+                        .WithOne("Address")
+                        .HasForeignKey("LearningManagementSystem.Core.Entities.Address", "AppUserId");
+
+                    b.Navigation("appUser");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -326,6 +429,11 @@ namespace LearningManagementSystem.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("LearningManagementSystem.Core.Entities.AppUser", b =>
+                {
+                    b.Navigation("Address");
                 });
 #pragma warning restore 612, 618
         }

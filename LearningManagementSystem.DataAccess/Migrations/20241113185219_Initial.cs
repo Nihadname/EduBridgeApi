@@ -36,6 +36,7 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     BlockedUntil = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
@@ -54,23 +55,39 @@ namespace LearningManagementSystem.DataAccess.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.CheckConstraint("CK_User_MinimumAge", "DATEDIFF(YEAR, BirthDate, GETDATE()) >= 15");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Courses",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(110)", maxLength: 110, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()"),
                     DeletedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Courses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "students",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AvarageScore = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()"),
+                    DeletedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_students", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -92,6 +109,31 @@ namespace LearningManagementSystem.DataAccess.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "addresses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(70)", maxLength: 70, nullable: true),
+                    City = table.Column<string>(type: "nvarchar(90)", maxLength: 90, nullable: true),
+                    Region = table.Column<string>(type: "nvarchar(90)", maxLength: 90, nullable: true),
+                    Street = table.Column<string>(type: "nvarchar(90)", maxLength: 90, nullable: true),
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()"),
+                    DeletedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_addresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_addresses_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -180,6 +222,13 @@ namespace LearningManagementSystem.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_addresses_AppUserId",
+                table: "addresses",
+                column: "AppUserId",
+                unique: true,
+                filter: "[AppUserId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -223,6 +272,9 @@ namespace LearningManagementSystem.DataAccess.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "addresses");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
@@ -239,6 +291,9 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "Courses");
+
+            migrationBuilder.DropTable(
+                name: "students");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

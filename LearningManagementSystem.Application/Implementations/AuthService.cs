@@ -66,7 +66,11 @@ namespace LearningManagementSystem.Application.Implementations
                 throw new CustomException(400, "PhoneNumber", "PhoneNumber already exists ");
 
             }
-            
+            if (DateTime.Now.Year - registerDto.BirthDate.Year <15)
+            {
+                throw new CustomException(400, "BirthDate", "Student can not be younger than 15  ");
+
+            }
             AppUser appUser = new AppUser();
             appUser.UserName = registerDto.UserName;
             appUser.Email = registerDto.Email;
@@ -76,7 +80,7 @@ namespace LearningManagementSystem.Application.Implementations
             appUser.Image = null;
 
             appUser.CreatedTime = DateTime.UtcNow;
-
+            appUser.BirthDate = registerDto.BirthDate;
             var result = await _userManager.CreateAsync(appUser, registerDto.Password);
             if (!result.Succeeded)
             {
