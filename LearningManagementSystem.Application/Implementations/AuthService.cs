@@ -82,6 +82,7 @@ namespace LearningManagementSystem.Application.Implementations
             appUser.CreatedTime = DateTime.UtcNow;
             appUser.BirthDate = registerDto.BirthDate;
             var result = await _userManager.CreateAsync(appUser, registerDto.Password);
+          
             if (!result.Succeeded)
             {
                 var errorMessages = result.Errors.ToDictionary(e => e.Code, e => e.Description);
