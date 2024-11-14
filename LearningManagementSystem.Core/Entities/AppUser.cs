@@ -28,5 +28,8 @@ namespace LearningManagementSystem.Core.Entities
 
             return age;
         }
+        public Student Student { get; set; }
+        public Teacher Teacher { get; set; }
+        public Parent Parent { get; set; }
     }
 }

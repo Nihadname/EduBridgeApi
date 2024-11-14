@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Core.Entities
 {
-    public class Student:BaseEntity
-    { 
-        public decimal? AvarageScore { get; set; }
+    public class Parent:BaseEntity
+    {
         public string AppUserId { get; set; }
         public AppUser AppUser { get; set; }
-        public Guid ParentId { get; set; }
-        public Parent Parent { get; set; }
+        public Student Student { get; set; }
     }
 }

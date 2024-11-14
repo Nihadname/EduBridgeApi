@@ -4,25 +4,21 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace LearningManagementSystem.DataAccess.Data.Configurations
 {
-    public class StudentConfiguration : IEntityTypeConfiguration<Student>
+    public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
     {
-        public void Configure(EntityTypeBuilder<Student> builder)
+        public void Configure(EntityTypeBuilder<Teacher> builder)
         {
             builder.Property(s => s.IsDeleted).HasDefaultValue(false);
             builder.Property(s => s.CreatedTime).HasDefaultValueSql("GETDATE()");
             builder.Property(s => s.UpdatedTime).HasDefaultValueSql("GETDATE()");
             builder.HasKey(e => e.Id);
-            builder.Property(s => s.AvarageScore).HasColumnType("decimal(18, 2)");
-            builder
-       .HasOne(s => s.Parent)
-       .WithOne(p => p.Student)
-       .HasForeignKey<Student>(s => s.ParentId);
+            builder.Property(s => s.Salary).HasColumnType("decimal(18, 2)");
+
         }
     }
 }
