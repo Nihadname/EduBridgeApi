@@ -4,6 +4,7 @@ using LearningManagementSystem.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearningManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241114215736_CourseStudentLogic")]
+    partial class CourseStudentLogic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,84 +206,6 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.Lesson", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CreatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ScheduledDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("TeacherId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("TeacherId");
-
-                    b.ToTable("lessons");
-                });
-
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.LessonStudent", b =>
-                {
-                    b.Property<Guid>("LessonId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Attended")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("CreatedTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime?>("DeletedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("UpdatedTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.HasKey("LessonId", "StudentId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("lessonsStudents");
-                });
-
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Parent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -354,6 +279,42 @@ namespace LearningManagementSystem.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("students");
+                });
+
+            modelBuilder.Entity("LearningManagementSystem.Core.Entities.StudentCourse", b =>
+                {
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("Grade")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("StudentId", "CourseId");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("StudentCourse");
                 });
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Teacher", b =>
@@ -564,44 +525,6 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.Navigation("appUser");
                 });
 
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.Lesson", b =>
-                {
-                    b.HasOne("LearningManagementSystem.Core.Entities.Course", "Course")
-                        .WithMany("lessons")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LearningManagementSystem.Core.Entities.Teacher", "Teacher")
-                        .WithMany()
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.LessonStudent", b =>
-                {
-                    b.HasOne("LearningManagementSystem.Core.Entities.Lesson", "Lesson")
-                        .WithMany("lessonStudents")
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LearningManagementSystem.Core.Entities.Student", "Student")
-                        .WithMany("lessonStudents")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Parent", b =>
                 {
                     b.HasOne("LearningManagementSystem.Core.Entities.AppUser", "AppUser")
@@ -626,6 +549,25 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.Navigation("AppUser");
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("LearningManagementSystem.Core.Entities.StudentCourse", b =>
+                {
+                    b.HasOne("LearningManagementSystem.Core.Entities.Course", "Course")
+                        .WithMany("StudentCourses")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LearningManagementSystem.Core.Entities.Student", "Student")
+                        .WithMany("StudentCourses")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Teacher", b =>
@@ -701,12 +643,7 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Course", b =>
                 {
-                    b.Navigation("lessons");
-                });
-
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.Lesson", b =>
-                {
-                    b.Navigation("lessonStudents");
+                    b.Navigation("StudentCourses");
                 });
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Parent", b =>
@@ -716,7 +653,7 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Student", b =>
                 {
-                    b.Navigation("lessonStudents");
+                    b.Navigation("StudentCourses");
                 });
 #pragma warning restore 612, 618
         }

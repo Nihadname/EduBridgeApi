@@ -21,6 +21,8 @@ namespace LearningManagementSystem.DataAccess.Data
         public DbSet<Student> students { get; set; }
         public DbSet<Parent> parents { get; set; }
         public DbSet<Teacher> teachers { get; set; }
+        public DbSet<Lesson> lessons { get; set; }
+        public DbSet<LessonStudent> lessonsStudents { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
