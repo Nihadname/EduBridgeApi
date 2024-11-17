@@ -36,6 +36,12 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         {
             return Ok(await _authService.RegisterForTeacher(teacherRegistrationDto));
         }
+        [HttpPost("RegisterForParent")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 
+        public async Task<IActionResult> RegisterForParent(RegisterDto registerDto)
+        {
+            return Ok(await _authService.RegisterForParent(registerDto));
+        }
     }
 }

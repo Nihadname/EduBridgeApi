@@ -65,6 +65,19 @@ namespace LearningManagementSystem.Application.Implementations
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
         }
+        public async Task<UserGetDto> RegisterForParent(RegisterDto registerDto)
+        {
+            var appUser = await CreateUser(registerDto);
+
+            await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
+            var Parent = new  Parent();
+
+            Parent.AppUserId = appUser.Id;
+            await _unitOfWork.ParentRepository.Create(Parent);
+            await _unitOfWork.Commit();
+            var MappedUser = _mapper.Map<UserGetDto>(appUser);
+            return MappedUser;
+        }
         private async Task<AppUser> CreateUser(RegisterDto registerDto)
         {
             var existUser = await _userManager.FindByNameAsync(registerDto.UserName);

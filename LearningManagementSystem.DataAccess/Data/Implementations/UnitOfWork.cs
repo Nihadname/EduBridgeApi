@@ -17,11 +17,13 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public ICourseRepository CourseRepository { get; private set; }
         public IStudentRepository StudentRepository { get; private set; }
         public ITeacherRepository TeacherRepository { get; private set; }
+        public IParentRepository ParentRepository { get; private set; }
         public UnitOfWork(ApplicationDbContext applicationDbContext)
         {
             CourseRepository = new CourseRepository(applicationDbContext);
             StudentRepository = new StudentRepository(applicationDbContext);
             TeacherRepository = new TeacherRepository(applicationDbContext);
+            ParentRepository = new ParentRepository(applicationDbContext);  
             _applicationDbContext = applicationDbContext;
 
         }
