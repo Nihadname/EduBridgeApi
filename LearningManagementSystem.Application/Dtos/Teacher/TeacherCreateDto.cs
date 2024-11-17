@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Teacher
@@ -18,6 +19,7 @@ namespace LearningManagementSystem.Application.Dtos.Teacher
         public string pinterestUrl { get; set; }
         public string SkypeUrl { get; set; }
         public string IntaUrl { get; set; }
+        [JsonIgnore]
         public string AppUserId { get; set; }
     }
 }

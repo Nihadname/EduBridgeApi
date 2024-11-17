@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Helpers.Enums;
@@ -65,15 +66,25 @@ namespace LearningManagementSystem.Application.Implementations
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
         }
-        public async Task<UserGetDto> RegisterForParent(RegisterDto registerDto)
+        public async Task<UserGetDto> RegisterForParent(ParentRegisterDto  parentRegisterDto)
         {
-            var appUser = await CreateUser(registerDto);
+            var appUser = await CreateUser(parentRegisterDto.Register);
 
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
-            var Parent = new  Parent();
-
-            Parent.AppUserId = appUser.Id;
-            await _unitOfWork.ParentRepository.Create(Parent);
+            parentRegisterDto.Parent.AppUserId=appUser.Id;
+            if (parentRegisterDto.Parent.StudentIds.Any())
+            {
+                foreach (var student in parentRegisterDto.Parent.StudentIds)
+                {
+                   if(await _unitOfWork.StudentRepository.isExists(s => s.Id == student) is false)
+                    {
+                        throw new CustomException(400, "StudentId", "the choosen student  doesnt exist");
+                    }
+                }
+            }
+            var MappedParent=_mapper.Map<Parent>(parentRegisterDto.Parent);
+            
+            await _unitOfWork.ParentRepository.Create(MappedParent);
             await _unitOfWork.Commit();
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
@@ -114,7 +125,7 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return appUser;
         }
-        public async Task<string> Login(LoginDto loginDto)
+        public async Task<AuthResponseDto> Login(LoginDto loginDto)
         {
             var User = await _userManager.FindByEmailAsync(loginDto.UserNameOrGmail);
             if (User == null)
@@ -152,7 +163,12 @@ namespace LearningManagementSystem.Application.Implementations
             var Audience = _jwtSettings.Audience;
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
-            return tokenService.GetToken(SecretKey, Audience, Issuer, User, roles);
+            return new AuthResponseDto
+            {
+                IsSuccess = true,
+                Token = tokenService.GetToken(SecretKey, Audience, Issuer, User, roles)
+            };
+                
         }
 
     }

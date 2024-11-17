@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,9 +40,9 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         [HttpPost("RegisterForParent")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 
-        public async Task<IActionResult> RegisterForParent(RegisterDto registerDto)
+        public async Task<IActionResult> RegisterForParent(ParentRegisterDto parentRegisterDto)
         {
-            return Ok(await _authService.RegisterForParent(registerDto));
+            return Ok(await _authService.RegisterForParent(parentRegisterDto));
         }
     }
 }

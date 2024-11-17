@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Core.Entities;
 using Microsoft.AspNetCore.Http;
@@ -21,6 +22,7 @@ namespace LearningManagementSystem.Application.Profiles
             _contextAccessor = contextAccessor;
             CreateMap<AppUser, UserGetDto>();
             CreateMap<TeacherCreateDto, Teacher>();
+            CreateMap<ParentCreateDto, Parent>();
         }
     }
 }

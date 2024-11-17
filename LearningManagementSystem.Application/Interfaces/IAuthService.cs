@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace LearningManagementSystem.Application.Interfaces
     {
          Task<UserGetDto> RegisterForStudent(RegisterDto registerDto);
         Task<UserGetDto> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto);
-        Task<string> Login(LoginDto loginDto);
-        Task<UserGetDto> RegisterForParent(RegisterDto registerDto);
+        Task<AuthResponseDto> Login(LoginDto loginDto);
+        Task<UserGetDto> RegisterForParent(ParentRegisterDto parentRegisterDto);
     }
 }
