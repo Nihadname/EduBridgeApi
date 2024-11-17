@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Teacher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface IAuthService
     {
          Task<UserGetDto> RegisterForStudent(RegisterDto registerDto);
-        Task<UserGetDto> RegisterForTeacher(RegisterDto registerDto);
+        Task<UserGetDto> RegisterForTeacher(RegisterDto registerDto, TeacherCreateDto teacherCreateDto)
         Task<string> Login(LoginDto loginDto);
     }
 }

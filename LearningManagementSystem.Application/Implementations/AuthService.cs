@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Helpers.Enums;
 using LearningManagementSystem.Application.Interfaces;
@@ -53,11 +54,14 @@ namespace LearningManagementSystem.Application.Implementations
             return MappedUser;
         }
 
-        public async Task<UserGetDto> RegisterForTeacher(RegisterDto registerDto)
+        public async Task<UserGetDto> RegisterForTeacher(RegisterDto registerDto,TeacherCreateDto teacherCreateDto)
         {
           var appUser= await CreateUser(registerDto);
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Teacher.ToString());
-
+            teacherCreateDto.AppUserId=appUser.Id;
+            var MappedTeacher = _mapper.Map<Teacher>(teacherCreateDto);
+            await _unitOfWork.TeacherRepository.Create(MappedTeacher);
+            await _unitOfWork.Commit();
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
         }

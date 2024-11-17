@@ -12,6 +12,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
     {
         public ICourseRepository CourseRepository { get; }
         public IStudentRepository StudentRepository { get; }
+        public ITeacherRepository TeacherRepository { get; }
         public Task Commit();
        public Task<IDbContextTransaction> BeginTransactionAsync();
     }
