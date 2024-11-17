@@ -11,6 +11,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
     public interface IUnitOfWork
     {
         public ICourseRepository CourseRepository { get; }
+        public IStudentRepository StudentRepository { get; }
         public Task Commit();
        public Task<IDbContextTransaction> BeginTransactionAsync();
     }

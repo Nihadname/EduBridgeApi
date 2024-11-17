@@ -12,7 +12,7 @@ namespace LearningManagementSystem.Core.Entities
         public decimal? AvarageScore { get; set; }
         public string AppUserId { get; set; }
         public AppUser AppUser { get; set; }
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
         public Parent Parent { get; set; }
         public ICollection<LessonStudent> lessonStudents { get; set; }
 

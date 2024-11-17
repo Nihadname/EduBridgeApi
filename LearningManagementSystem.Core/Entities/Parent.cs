@@ -11,6 +11,6 @@ namespace LearningManagementSystem.Core.Entities
     {
         public string AppUserId { get; set; }
         public AppUser AppUser { get; set; }
-        public Student Student { get; set; }
+        public ICollection<Student> Students { get; set; }  
     }
 }

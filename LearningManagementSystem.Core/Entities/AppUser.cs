@@ -15,9 +15,24 @@ namespace LearningManagementSystem.Core.Entities
         public DateTime? CreatedTime { get; set; }
         public DateTime? UpdatedTime { get;  set; }
         public DateTime? BlockedUntil { get; set; }
-        public DateTime BirthDate { get; set; }
-        public int Age => CalculateAgeOfUser(BirthDate);
+        private DateTime _birthDate;
+        public DateTime BirthDate
+        {
+            get => _birthDate;
+            set
+            {
+                _birthDate = value;
+                Age = CalculateAgeOfUser(_birthDate); 
+            }
+        }
+     
+        public int Age { get; private set; }
         public Address Address { get; set; }
+        public void UpdateAge()
+        {
+            Age = CalculateAgeOfUser(BirthDate);
+        }
+
         private int  CalculateAgeOfUser(DateTime birthDate)
         {
             var Now=DateTime.Now;

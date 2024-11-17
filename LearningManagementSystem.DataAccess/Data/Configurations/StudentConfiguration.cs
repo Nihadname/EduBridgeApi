@@ -21,8 +21,8 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s => s.AvarageScore).HasColumnType("decimal(18, 2)");
             builder
        .HasOne(s => s.Parent)
-       .WithOne(p => p.Student)
-       .HasForeignKey<Student>(s => s.ParentId);
+       .WithMany(p => p.Students);
+     
         }
     }
 }

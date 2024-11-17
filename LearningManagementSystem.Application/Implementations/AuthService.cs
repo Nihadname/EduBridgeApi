@@ -6,6 +6,7 @@ using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data;
+using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -24,10 +25,10 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly JwtSettings _jwtSettings;
         private readonly ITokenService tokenService;
         private readonly ApplicationDbContext _context;
-
+        private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context)
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -35,6 +36,7 @@ namespace LearningManagementSystem.Application.Implementations
             _jwtSettings = jwtSettings.Value;
             this.tokenService = tokenService;
             _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
@@ -42,7 +44,11 @@ namespace LearningManagementSystem.Application.Implementations
             var appUser = await CreateUser(registerDto);
 
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
-            
+           var Student = new Student();
+            Student.AvarageScore= null;
+            Student.AppUserId=appUser.Id;
+            await _unitOfWork.StudentRepository.Create(Student);
+           await _unitOfWork.Commit();
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
         }

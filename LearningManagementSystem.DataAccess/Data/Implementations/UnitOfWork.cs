@@ -15,9 +15,11 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         private readonly ApplicationDbContext _applicationDbContext;
 
         public ICourseRepository CourseRepository { get; private set; }
+        public IStudentRepository StudentRepository { get; private set; }
         public UnitOfWork(ApplicationDbContext applicationDbContext)
         {
             CourseRepository = new CourseRepository(applicationDbContext);
+            StudentRepository = new StudentRepository(applicationDbContext);
             _applicationDbContext = applicationDbContext;
 
         }
