@@ -54,12 +54,12 @@ namespace LearningManagementSystem.Application.Implementations
             return MappedUser;
         }
 
-        public async Task<UserGetDto> RegisterForTeacher(RegisterDto registerDto,TeacherCreateDto teacherCreateDto)
+        public async Task<UserGetDto> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto)
         {
-          var appUser= await CreateUser(registerDto);
+          var appUser= await CreateUser(teacherRegistrationDto.Register);
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Teacher.ToString());
-            teacherCreateDto.AppUserId=appUser.Id;
-            var MappedTeacher = _mapper.Map<Teacher>(teacherCreateDto);
+            teacherRegistrationDto.Teacher.AppUserId=appUser.Id;
+            var MappedTeacher = _mapper.Map<Teacher>(teacherRegistrationDto.Teacher);
             await _unitOfWork.TeacherRepository.Create(MappedTeacher);
             await _unitOfWork.Commit();
             var MappedUser = _mapper.Map<UserGetDto>(appUser);

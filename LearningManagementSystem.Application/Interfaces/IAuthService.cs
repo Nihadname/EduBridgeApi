@@ -11,7 +11,7 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface IAuthService
     {
          Task<UserGetDto> RegisterForStudent(RegisterDto registerDto);
-        Task<UserGetDto> RegisterForTeacher(RegisterDto registerDto, TeacherCreateDto teacherCreateDto)
+        Task<UserGetDto> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto);
         Task<string> Login(LoginDto loginDto);
     }
 }
