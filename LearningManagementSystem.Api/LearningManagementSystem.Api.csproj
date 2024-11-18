@@ -7,13 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="wwwroot\**" />
-	  <Content Remove="wwwroot\**" />
-	  <EmbeddedResource Remove="wwwroot\**" />
-	  <None Remove="wwwroot\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
 
 		<PackageReference Include="Microsoft.AspNet.Cors" Version="5.3.0" />
@@ -28,6 +21,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\LearningManagementSystem.Application\LearningManagementSystem.Application.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\img\" />
 	</ItemGroup>
 
 </Project>

@@ -15,5 +15,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<UserGetDto> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto);
         Task<AuthResponseDto> Login(LoginDto loginDto);
         Task<UserGetDto> RegisterForParent(ParentRegisterDto parentRegisterDto);
+        Task<string> UpdateImage(UserUpdateImageDto userUpdateImageDto);
     }
 }

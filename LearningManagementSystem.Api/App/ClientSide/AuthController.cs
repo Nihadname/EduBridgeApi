@@ -21,5 +21,10 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _authService.Login(loginDto));
         }
+        [HttpPut("UpdateImage")]
+        public async Task<IActionResult> UpdateImage(UserUpdateImageDto userUpdateImageDto)
+        {
+            return Ok(await _authService.UpdateImage(userUpdateImageDto));
+        }
     }
 }

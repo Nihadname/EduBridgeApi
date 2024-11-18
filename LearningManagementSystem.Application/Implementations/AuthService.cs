@@ -3,12 +3,14 @@ using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Application.Exceptions;
+using LearningManagementSystem.Application.Extensions;
 using LearningManagementSystem.Application.Helpers.Enums;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data;
 using LearningManagementSystem.DataAccess.Data.Implementations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,7 +35,9 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -41,6 +46,7 @@ namespace LearningManagementSystem.Application.Implementations
             this.tokenService = tokenService;
             _context = context;
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
@@ -182,6 +188,22 @@ namespace LearningManagementSystem.Application.Implementations
             };
                 
         }
-
+        public async Task<string> UpdateImage(UserUpdateImageDto userUpdateImageDto)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new CustomException(400, "Id", "User ID cannot be null");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null) throw new CustomException(403, "this user doesnt exist");
+            if (!string.IsNullOrEmpty(user.Image))
+            {
+                user.Image.DeleteFile();
+            }
+            user.Image = userUpdateImageDto.Image.Save(Directory.GetCurrentDirectory(), "img");
+            await _userManager.UpdateAsync(user);
+            return user.Image;
+        }
     }
 }
