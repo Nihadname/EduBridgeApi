@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Core.Entities
 {
-    public class LessonStudent:BaseEntity
+    public class QuizResult:BaseEntity
     {
-        public Guid LessonId  { get; set; }
-        public Lesson Lesson { get; set; }
+        public Guid QuizId { get; set; } 
+        public LessonQuiz Quiz { get; set; } 
         public Guid StudentId { get; set; }
         public Student Student { get; set; }
-        public bool Attended { get; set; }
-        public ICollection<QuizResult> QuizResults { get; set; }
-
+        public decimal? Score { get; set; } 
+        public DateTime AttemptedAt { get; set; } 
+        public bool IsPassed { get; set; } 
     }
 }

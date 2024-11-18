@@ -44,5 +44,6 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         {
             return Ok(await _authService.RegisterForParent(parentRegisterDto));
         }
+       
     }
 }

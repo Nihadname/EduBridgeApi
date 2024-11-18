@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace LearningManagementSystem.Application.Implementations
     public class AuthService : IAuthService
     {
         private UserManager<AppUser> _userManager;
+        
         private readonly JwtSettings _jwtSettings;
         private readonly ITokenService tokenService;
         private readonly ApplicationDbContext _context;
@@ -69,20 +71,30 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<UserGetDto> RegisterForParent(ParentRegisterDto  parentRegisterDto)
         {
             var appUser = await CreateUser(parentRegisterDto.Register);
+            await _roleManager.CreateAsync(new IdentityRole(RolesEnum.Parent.ToString()));
 
-            await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
+            await _userManager.AddToRoleAsync(appUser, RolesEnum.Parent.ToString());
             parentRegisterDto.Parent.AppUserId=appUser.Id;
+            var MappedParent = _mapper.Map<Parent>(parentRegisterDto.Parent);
+
+            var Students = new List<Student>();
             if (parentRegisterDto.Parent.StudentIds.Any())
             {
                 foreach (var student in parentRegisterDto.Parent.StudentIds)
                 {
-                   if(await _unitOfWork.StudentRepository.isExists(s => s.Id == student) is false)
+                   if(await _unitOfWork.StudentRepository.isExists(s => s.Id == student) is not false)
+                    {
+                        var ExistedStudent = await _unitOfWork.StudentRepository.GetEntity(s => s.Id == student);
+                        Students.Add(ExistedStudent);
+                    }
+                    else
                     {
                         throw new CustomException(400, "StudentId", "the choosen student  doesnt exist");
+
                     }
                 }
+                MappedParent.Students = Students;
             }
-            var MappedParent=_mapper.Map<Parent>(parentRegisterDto.Parent);
             
             await _unitOfWork.ParentRepository.Create(MappedParent);
             await _unitOfWork.Commit();

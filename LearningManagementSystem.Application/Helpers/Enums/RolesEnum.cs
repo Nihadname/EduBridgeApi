@@ -10,6 +10,7 @@ namespace LearningManagementSystem.Application.Helpers.Enums
     {
         Admin,
     Student,
-    Teacher
+    Teacher,
+    Parent
     }
 }

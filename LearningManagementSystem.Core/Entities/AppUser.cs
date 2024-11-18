@@ -46,5 +46,6 @@ namespace LearningManagementSystem.Core.Entities
         public Student Student { get; set; }
         public Teacher Teacher { get; set; }
         public Parent Parent { get; set; }
+        public ICollection<Note> Notes { get; set; }
     }
 }

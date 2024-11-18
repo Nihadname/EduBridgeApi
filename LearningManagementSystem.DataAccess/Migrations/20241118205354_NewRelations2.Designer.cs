@@ -4,6 +4,7 @@ using LearningManagementSystem.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearningManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241118205354_NewRelations2")]
+    partial class NewRelations2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -260,7 +263,7 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("LessonId")
+                    b.Property<Guid?>("LessonId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
@@ -782,13 +785,9 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.LessonMaterial", b =>
                 {
-                    b.HasOne("LearningManagementSystem.Core.Entities.Lesson", "Lesson")
+                    b.HasOne("LearningManagementSystem.Core.Entities.Lesson", null)
                         .WithMany("lessonMaterials")
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
+                        .HasForeignKey("LessonId");
                 });
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.LessonQuiz", b =>
