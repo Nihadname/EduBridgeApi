@@ -171,7 +171,7 @@ namespace LearningManagementSystem.Application.Implementations
                 }
                 else
                 {
-                    // User is still blocked
+                  
                    
                     throw new CustomException(403, "UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}");
                 }
@@ -205,5 +205,26 @@ namespace LearningManagementSystem.Application.Implementations
             await _userManager.UpdateAsync(user);
             return user.Image;
         }
+        public async Task<string> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new CustomException(400, "Id", "User ID cannot be null");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+            {
+                throw new CustomException(404, "Id", "User  not found");
+            }
+            var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errorMessages = result.Errors.ToDictionary(e => e.Code, e => e.Description);
+                throw new CustomException(400, errorMessages);
+            }
+            return result.ToString();
+        }
+
     }
 }

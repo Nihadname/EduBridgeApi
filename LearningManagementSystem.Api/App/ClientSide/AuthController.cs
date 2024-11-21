@@ -1,5 +1,7 @@
 ﻿using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,5 +28,12 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _authService.UpdateImage(userUpdateImageDto));
         }
+        [HttpPost("ChangePassword")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            return Ok(await _authService.ChangePassword(changePasswordDto));
+        }
+
     }
 }
