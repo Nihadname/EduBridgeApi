@@ -1,4 +1,5 @@
-﻿using LearningManagementSystem.Core.Repositories;
+﻿using LearningManagementSystem.Core.Entities;
+using LearningManagementSystem.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -18,12 +19,14 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public IStudentRepository StudentRepository { get; private set; }
         public ITeacherRepository TeacherRepository { get; private set; }
         public IParentRepository ParentRepository { get; private set; }
+        public IRequstToRegisterRepository RequstToRegisterRepository { get; private set; }
         public UnitOfWork(ApplicationDbContext applicationDbContext)
         {
             CourseRepository = new CourseRepository(applicationDbContext);
             StudentRepository = new StudentRepository(applicationDbContext);
             TeacherRepository = new TeacherRepository(applicationDbContext);
-            ParentRepository = new ParentRepository(applicationDbContext);  
+            ParentRepository = new ParentRepository(applicationDbContext);
+            RequstToRegisterRepository= new RequstToRegisterRepository(applicationDbContext);
             _applicationDbContext = applicationDbContext;
 
         }

@@ -23,6 +23,14 @@ namespace LearningManagementSystem.DataAccess.Data
         public DbSet<Teacher> teachers { get; set; }
         public DbSet<Lesson> lessons { get; set; }
         public DbSet<LessonStudent> lessonsStudents { get; set; }
+        public DbSet<LessonMaterial> lessonsMaterial { get; set; }
+        public DbSet<LessonQuiz> lessonQuizzes { get; set; }
+        public DbSet<LessonVideo> lessonsVideo { get; set; }
+        public DbSet<Note> notes { get; set; }
+        public DbSet<QuizOption> quizOptions { get; set; }
+        public DbSet<QuizQuestion > quizQuestions { get; set; }
+        public DbSet<QuizResult> quizResults { get; set; }
+        public DbSet<RequestToRegister> requestToRegister { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

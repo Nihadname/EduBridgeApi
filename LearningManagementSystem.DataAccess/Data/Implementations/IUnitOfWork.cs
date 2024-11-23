@@ -16,5 +16,6 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public IParentRepository  ParentRepository { get; }
         public Task Commit();
        public Task<IDbContextTransaction> BeginTransactionAsync();
+        public IRequstToRegisterRepository RequstToRegisterRepository { get; }
     }
 }
