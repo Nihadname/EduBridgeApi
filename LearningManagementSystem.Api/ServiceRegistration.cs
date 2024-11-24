@@ -122,6 +122,8 @@ namespace LearningManagementSystem.Api
             services.AddScoped<IUnitOfWork,UnitOfWork>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IRequstToRegisterRepository, RequstToRegisterRepository>();
+            services.AddScoped<IRequstToRegisterService, RequstToRegisterService>();
         }
     }
 }

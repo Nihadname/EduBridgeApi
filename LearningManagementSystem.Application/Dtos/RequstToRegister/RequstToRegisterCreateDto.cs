@@ -9,7 +9,7 @@ namespace LearningManagementSystem.Application.Dtos.RequstToRegister
     public class RequstToRegisterCreateDto
     {
         public string FullName { get; set; }
-        public int? Age { get; private set; }
+        public int Age { get;  set; }
         public bool IsParent { get; set; }
         public string PhoneNumber { get; set; }
         public ICollection<string> ExistedCourses { get; set; }

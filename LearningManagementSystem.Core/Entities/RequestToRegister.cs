@@ -16,7 +16,7 @@ namespace LearningManagementSystem.Core.Entities
         public ICollection<string> ExistedCourses { get; set; }
         public string ChoosenCourse { get; set; }
         public string ChildName { get; set; }
-        public int ChildAge { get; set; }
+        public int? ChildAge { get; set; }
         public string Email {get; set; }
     }
 }

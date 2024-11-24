@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LearningManagementSystem.Application.Dtos.RequstToRegister;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace LearningManagementSystem.Application.Interfaces
 {
     public interface IRequstToRegisterService
     {
+        Task<string> Create(RequstToRegisterCreateDto requstToRegisterCreateDto);
     }
 }
