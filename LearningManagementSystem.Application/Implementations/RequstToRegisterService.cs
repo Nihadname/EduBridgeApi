@@ -5,6 +5,7 @@ using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data.Implementations;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,13 @@ namespace LearningManagementSystem.Application.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _config;
 
-        public RequstToRegisterService(IMapper mapper, IUnitOfWork unitOfWork)
+        public RequstToRegisterService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration config)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _config = config;
         }
         public async Task<string> Create(RequstToRegisterCreateDto requstToRegisterCreateDto)
         {
@@ -61,7 +64,7 @@ namespace LearningManagementSystem.Application.Implementations
         }
         private async Task<string> GetAdviceFromAi(Course course, string childName, int childAge)
         {
-            var apiKey = "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";
+            var apiKey = _config.GetSection("ChatGbt:secretKey").Value;
             var url = "https://api.openai.com/v1/chat/completions";
 
             using (var client = new HttpClient())
