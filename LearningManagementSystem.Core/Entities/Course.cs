@@ -10,6 +10,7 @@ namespace LearningManagementSystem.Core.Entities
     public class Course:BaseEntity
     {
         public string Name { get; set; }
+        public string Description { get; set; }
         public ICollection<Lesson> lessons { get; set; }
     }
 }

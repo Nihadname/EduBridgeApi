@@ -19,9 +19,8 @@ namespace LearningManagementSystem.Api.App.ClientSide
         [HttpPost]
         public  async Task<IActionResult> Create([FromForm]RequstToRegisterCreateDto requstToRegisterCreateDto)
         {
-           
-                return Ok(await _requstToRegisterService.Create(requstToRegisterCreateDto));
-           
+            return Ok(new { message = await _requstToRegisterService.Create(requstToRegisterCreateDto) });
         }
+
     }
 }

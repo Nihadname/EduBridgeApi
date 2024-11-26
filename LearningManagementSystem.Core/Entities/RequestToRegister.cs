@@ -13,10 +13,10 @@ namespace LearningManagementSystem.Core.Entities
         public int Age { get; private set; }
         public bool IsParent { get; set; }
         public string  PhoneNumber { get; set; }
-        public ICollection<string> ExistedCourses { get; set; }
-        public string ChoosenCourse { get; set; }
+        public Guid ChoosenCourse { get; set; }
         public string ChildName { get; set; }
         public int? ChildAge { get; set; }
         public string Email {get; set; }
+        public string AiResponse { get; set; }
     }
 }

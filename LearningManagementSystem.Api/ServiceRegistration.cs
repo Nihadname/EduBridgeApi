@@ -94,7 +94,7 @@ namespace LearningManagementSystem.Api
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "JWTToken_Auth_API",
+                    Title = "LearningManagementSystem",
                     Version = "v1"
                 });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
@@ -124,6 +124,7 @@ namespace LearningManagementSystem.Api
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IRequstToRegisterRepository, RequstToRegisterRepository>();
             services.AddScoped<IRequstToRegisterService, RequstToRegisterService>();
+            services.AddScoped<ICourseService, CourseService>();
         }
     }
 }

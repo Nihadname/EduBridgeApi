@@ -17,5 +17,6 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public Task Commit();
        public Task<IDbContextTransaction> BeginTransactionAsync();
         public IRequstToRegisterRepository RequstToRegisterRepository { get; }
+        public ICourseRepository courseRepository   { get; }
     }
 }
