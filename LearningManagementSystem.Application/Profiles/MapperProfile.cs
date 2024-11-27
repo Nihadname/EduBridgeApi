@@ -27,6 +27,8 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<ParentCreateDto, Parent>();
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
             CreateMap<Course,CourseSelectItemDto>();
+            CreateMap<Course, CourseReturnDto>();
+            CreateMap<CourseCreateDto, Course>();
         }
     }
 }

@@ -13,6 +13,7 @@ namespace LearningManagementSystem.Application.Validators.CourseValidators
         public CourseCreateDtoValidator()
         {
             RuleFor(s=>s.Name).MaximumLength(160).MinimumLength(2).NotEmpty();
+            RuleFor(s=>s.Description).MaximumLength(250).MinimumLength(3).NotEmpty();
         }
     }
 }

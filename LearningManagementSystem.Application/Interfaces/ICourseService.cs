@@ -10,5 +10,6 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface ICourseService
     {
         Task<List<CourseSelectItemDto>> GetAllAsSelectItem();
+        Task<CourseReturnDto> Create(CourseCreateDto courseCreateDto);
     }
 }
