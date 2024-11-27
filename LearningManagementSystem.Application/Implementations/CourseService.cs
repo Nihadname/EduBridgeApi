@@ -33,6 +33,26 @@ namespace LearningManagementSystem.Application.Implementations
             var ResponseCourseDto=_mapper.Map<CourseReturnDto>(MappedCourse);
             return ResponseCourseDto;
         }
+        public async Task<CourseReturnDto> Update(Guid id,CourseUpdateDto courseUpdateDto)
+        {
+            if (courseUpdateDto.Name != null)
+            {
+                if (await _unitOfWork.CourseRepository.isExists(s => s.Name.ToLower() == courseUpdateDto.Name.ToLower()))
+                {
+                    throw new CustomException(400, "Name", "There is an already existed course");
+                }
+            }
+            var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s =>s.Id == id);
+            if(ExistedCourse == null)
+            {
+                throw new CustomException(400, "Course doesnt exist");
+            }
+            _mapper.Map(courseUpdateDto, ExistedCourse);
+            await _unitOfWork.CourseRepository.Update(ExistedCourse);
+            await _unitOfWork.Commit();
+            var ResponseCourseDto = _mapper.Map<CourseReturnDto>(ExistedCourse);
+            return ResponseCourseDto;
+        }
         public async Task<List<CourseSelectItemDto>> GetAllAsSelectItem()
         {
             var allCourses= await _unitOfWork.CourseRepository.GetAll(s=>s.IsDeleted == false);

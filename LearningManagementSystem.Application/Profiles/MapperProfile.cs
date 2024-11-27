@@ -29,6 +29,8 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<Course,CourseSelectItemDto>();
             CreateMap<Course, CourseReturnDto>();
             CreateMap<CourseCreateDto, Course>();
+            CreateMap<CourseUpdateDto, Course>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

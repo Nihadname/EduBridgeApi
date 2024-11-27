@@ -20,5 +20,10 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         {
             return Ok(await _courseService.Create(courseCreateDto));
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromForm] CourseUpdateDto courseUpdateDto)
+        {
+            return Ok(await _courseService.Update(id, courseUpdateDto));
+        }
     }
 }
