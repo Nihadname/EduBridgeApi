@@ -125,6 +125,7 @@ namespace LearningManagementSystem.Api
             services.AddScoped<IRequstToRegisterRepository, RequstToRegisterRepository>();
             services.AddScoped<IRequstToRegisterService, RequstToRegisterService>();
             services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<IEmailService, EmailService>();
         }
     }
 }

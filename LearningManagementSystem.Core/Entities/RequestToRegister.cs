@@ -18,5 +18,6 @@ namespace LearningManagementSystem.Core.Entities
         public int? ChildAge { get; set; }
         public string Email {get; set; }
         public string AiResponse { get; set; }
+        public bool IsAccepted { get; set; }
     }
 }

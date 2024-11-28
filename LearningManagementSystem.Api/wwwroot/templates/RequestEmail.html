@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Accepted</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .email-header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .email-body {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+            .email-body p {
+                margin: 15px 0;
+            }
+
+        .email-footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            color: #777777;
+            background-color: #f9f9f9;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+            .button:hover {
+                background: #45a049;
+            }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Request Accepted</h1>
+        </div>
+        <div class="email-body">
+            <p>Dear {{FullName}},</p>
+            <p>We are pleased to inform you that your request has been successfully accepte,<strong>Soon we will create your account and send its details to you</strong>. Thank you for reaching out to us!</p>
+            <p>If you have any further questions or require additional assistance, feel free to contact our support team.</p>
+            <p>Thank you for choosing us!</p>
+        </div>
+        <div class="email-footer">
+            <p>&copy; 2024 Your Company Name. All rights reserved.</p>
+            <p>If you did not make this request, please contact our support immediately.</p>
+        </div>
+    </div>
+</body>
+</html>

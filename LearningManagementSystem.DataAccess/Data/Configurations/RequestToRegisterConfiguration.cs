@@ -18,6 +18,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s => s.UpdatedTime).HasDefaultValueSql("GETDATE()");
             builder.HasKey(e => e.Id);
             builder.Property(s=>s.ChildAge).IsRequired(false);
+            builder.Property(s=>s.IsAccepted).HasDefaultValue(false);
         }
     }
 }

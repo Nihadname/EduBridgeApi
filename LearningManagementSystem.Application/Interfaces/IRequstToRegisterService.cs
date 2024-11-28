@@ -10,5 +10,6 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface IRequstToRegisterService
     {
         Task<string> Create(RequstToRegisterCreateDto requstToRegisterCreateDto);
+        Task<string> SendAcceptanceEmail(Guid id);
     }
 }

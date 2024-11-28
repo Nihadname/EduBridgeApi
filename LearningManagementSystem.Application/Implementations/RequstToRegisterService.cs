@@ -20,12 +20,13 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-
-        public RequstToRegisterService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration config)
+        private readonly IEmailService _emailService;
+        public RequstToRegisterService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration config, IEmailService emailService)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _config = config;
+            _emailService = emailService;
         }
         public async Task<string> Create(RequstToRegisterCreateDto requstToRegisterCreateDto)
         {
@@ -102,12 +103,55 @@ Provide advice for the registration.";
                 }
             }
         }
+    public async Task<string> SendAcceptanceEmail(Guid id)
+    {
+            if (id == Guid.Empty)
+            {
+                throw new CustomException(440,"Invalid GUID provided.");
+            }
+            var ExistedRequestRegister=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.Id == id);
+            if(ExistedRequestRegister is null)
+            {
+                throw new CustomException(400, "RequestRegister", "You identify as a parent so , you have to mention age of your child");
+            }
+            if(ExistedRequestRegister.IsAccepted is true)
+            {
+                throw new CustomException(400, "this was already accepted so sending email is not needed");
+            }
+            ExistedRequestRegister.IsAccepted = true;
+            await _unitOfWork.RequstToRegisterRepository.Update(ExistedRequestRegister);
+            await _unitOfWork.Commit();
+            string body;
+            using (StreamReader sr = new StreamReader("wwwroot/templates/RequestEmail.html"))
+            {
+                body = sr.ReadToEnd();
+            }
+            body = body.Replace("{{FullName}}", ExistedRequestRegister.FullName);
 
-        
+            try
+            {
+                _emailService.SendEmail(
+                    from: "nihadcoding@gmail.com",
+                    to: ExistedRequestRegister.Email,
+                    subject: "Request already saved and accepted",
+                    body: body,
+                    smtpHost: "smtp.gmail.com",
+                    smtpPort: 587,
+                    enableSsl: true,
+                    smtpUser: "nihadcoding@gmail.com",
+                    smtpPass: "gulzclohfwjelppj"
+                );
 
-        
+                return "Email sent successfully.";
+            }
+            catch (Exception ex)
+            {
 
-       
+                await _unitOfWork.RequstToRegisterRepository.Delete(ExistedRequestRegister);
+                await _unitOfWork.Commit();
 
+                return "Email delivery failed. Request deleted due to invalid email.";
+            }
+        }
     }
 }
