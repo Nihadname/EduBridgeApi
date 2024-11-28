@@ -19,5 +19,7 @@ namespace LearningManagementSystem.Core.Entities
         public string Email {get; set; }
         public string AiResponse { get; set; }
         public bool IsAccepted { get; set; }
+        public bool IsEmailConfirmed { get; set; }
+        public string VerificationToken { get; set; }
     }
 }

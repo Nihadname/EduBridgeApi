@@ -5,6 +5,8 @@ using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data.Implementations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -21,12 +23,17 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly IEmailService _emailService;
-        public RequstToRegisterService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration config, IEmailService emailService)
+        private readonly LinkGenerator _linkGenerator;
+        private readonly IHttpContextAccessor _contextAccessor;
+
+        public RequstToRegisterService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration config, IEmailService emailService, LinkGenerator linkGenerator, IHttpContextAccessor contextAccessor)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _config = config;
             _emailService = emailService;
+            _linkGenerator = linkGenerator;
+            _contextAccessor = contextAccessor;
         }
         public async Task<string> Create(RequstToRegisterCreateDto requstToRegisterCreateDto)
         {
@@ -35,7 +42,12 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "Course", "You have choosen an invalid course");
             }
-            List<string> allCoursesNames = (await _unitOfWork.CourseRepository.GetAll()).Select(s => s.Name).ToList();
+            if(await _unitOfWork.RequstToRegisterRepository.isExists(s => s.Email.ToLower() == requstToRegisterCreateDto.Email.ToLower()))
+            {
+                throw new CustomException(400, "Parent", "there is an existing email like that so if it is your second child better to create new email or  add new one as our system doesnt support to have the same email for more than one time");
+
+            }
+            // List<string> allCoursesNames = (await _unitOfWork.CourseRepository.GetAll()).Select(s => s.Name).ToList();
             //   requstToRegisterCreateDto.ExistedCourses = allCoursesNames;
             if (requstToRegisterCreateDto.IsParent is true)
             {
@@ -55,13 +67,56 @@ namespace LearningManagementSystem.Application.Implementations
                 }
                 requstToRegisterCreateDto.AiResponse = await GetAdviceFromAi(existedCourse, requstToRegisterCreateDto.ChildName, (int)requstToRegisterCreateDto.ChildAge);
             }
-            var MappedRequestRegister = _mapper.Map<RequestToRegister>(requstToRegisterCreateDto);
-            await _unitOfWork.RequstToRegisterRepository.Create(MappedRequestRegister);
+            var token = Guid.NewGuid().ToString();
+
+            var requestToRegister = _mapper.Map<RequestToRegister>(requstToRegisterCreateDto);
+            requestToRegister.VerificationToken = token;
+            requestToRegister.IsEmailConfirmed = false;
+            await _unitOfWork.RequstToRegisterRepository.Create(requestToRegister);
             await _unitOfWork.Commit();
+            string link = _linkGenerator.GetUriByAction(
+                httpContext: _contextAccessor.HttpContext,
+                action: "VerifyExistenceOfEmailUser",
+                controller: "RequstToRegister",
+               values: new {token},
+                scheme: _contextAccessor.HttpContext.Request.Scheme,
+               host: _contextAccessor.HttpContext.Request.Host
+            );
+            string body = link;
+            _emailService.SendEmail(
+                 from: "nihadcoding@gmail.com",
+                 to: requstToRegisterCreateDto.Email,
+                 subject: "Verify Account",
+                        body: $"Click <a href='{link}'>here</a> to verify your account.",
+                 smtpHost: "smtp.gmail.com",
+                 smtpPort: 587,
+                 enableSsl: true,
+                 smtpUser: "nihadcoding@gmail.com",
+                 smtpPass: "gulzclohfwjelppj"
+             );
+            return requstToRegisterCreateDto.AiResponse;
 
-
-            return MappedRequestRegister.AiResponse;
-
+        }
+        public async Task<string> VerifyExistenceOfEmailUser(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new CustomException(400, "token is empty");
+            }
+            var ExistedRequest=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.VerificationToken.ToLower() == token.ToLower());
+            if (ExistedRequest == null)
+            {
+                throw new CustomException(404, "not found");
+            }
+            if (ExistedRequest.IsEmailConfirmed)
+            {
+                throw new CustomException(400, "Email is already confirmed.");
+            }
+            ExistedRequest.IsEmailConfirmed = true;
+            await _unitOfWork.RequstToRegisterRepository.Update(ExistedRequest);
+           await _unitOfWork.Commit();
+           
+            return "confirmed Succesfully";
         }
         private async Task<string> GetAdviceFromAi(Course course, string childName, int childAge)
         {
@@ -128,8 +183,7 @@ Provide advice for the registration.";
             }
             body = body.Replace("{{FullName}}", ExistedRequestRegister.FullName);
 
-            try
-            {
+          
                 _emailService.SendEmail(
                     from: "nihadcoding@gmail.com",
                     to: ExistedRequestRegister.Email,
@@ -143,15 +197,8 @@ Provide advice for the registration.";
                 );
 
                 return "Email sent successfully.";
-            }
-            catch (Exception ex)
-            {
-
-                await _unitOfWork.RequstToRegisterRepository.Delete(ExistedRequestRegister);
-                await _unitOfWork.Commit();
-
-                return "Email delivery failed. Request deleted due to invalid email.";
-            }
+            
+           
         }
     }
 }

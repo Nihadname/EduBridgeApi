@@ -6,6 +6,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using LearningManagementSystem.Application.Exceptions;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -34,19 +35,26 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public void SendEmail(string from, string to, string subject, string body, string smtpHost, int smtpPort, bool enableSsl, string smtpUser, string smtpPass)
         {
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(from);
-            mailMessage.To.Add(new MailAddress(to));
-            mailMessage.Subject = subject;
-            mailMessage.IsBodyHtml = true;
-            mailMessage.Body = body;
+            try
+            {
+                MailMessage mailMessage = new MailMessage();
+                mailMessage.From = new MailAddress(from);
+                mailMessage.To.Add(new MailAddress(to));
+                mailMessage.Subject = subject;
+                mailMessage.IsBodyHtml = true;
+                mailMessage.Body = body;
 
-            SmtpClient smtpClient = new SmtpClient();
-            smtpClient.Host = smtpHost;
-            smtpClient.Port = smtpPort;
-            smtpClient.EnableSsl = enableSsl;
-            smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPass);
-            smtpClient.Send(mailMessage);
+                SmtpClient smtpClient = new SmtpClient();
+                smtpClient.Host = smtpHost;
+                smtpClient.Port = smtpPort;
+                smtpClient.EnableSsl = enableSsl;
+                smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPass);
+                smtpClient.Send(mailMessage);
+            }
+            catch (SmtpFailedRecipientException ex)
+            {
+                throw new CustomException(400,ex.Message);
+            }
         }
 
         public async Task SendEmailAsyncToManyPeople(string from, List<string> recipients, string subject, string body, string smtpHost, int smtpPort, bool enableSsl, string smtpUser, string smtpPass)
