@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Details</title>
+    <style>
+        /* General Reset */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(to right, #4f46e5, #9333ea);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+            }
+
+        .content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+            .content h2 {
+                color: #4f46e5;
+                margin-bottom: 10px;
+            }
+
+            .content p {
+                margin: 10px 0;
+            }
+
+        .account-details {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+            .account-details p {
+                margin: 5px 0;
+                font-weight: bold;
+            }
+
+        .footer {
+            text-align: center;
+            padding: 10px;
+            background: #f4f4f4;
+            font-size: 12px;
+            color: #888;
+        }
+
+            .footer a {
+                color: #4f46e5;
+                text-decoration: none;
+            }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Welcome to EduHub</h1>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h2>Hello, {{UserName}}</h2>
+            <p>Thank you for creating an account with us! Here are your account details:</p>
+
+            <!-- Account Details -->
+            <div class="account-details">
+                <p><strong>UserName:</strong>{{UserName}}</p>
+                <p><strong>Email:</strong> {{Email}}</p>
+                <p><strong> Password:</strong> {{Password}}</p>
+            </div>
+
+            <p>We are excited to have you on board. If you have any questions, feel free to reach out to our support team.</p>
+            <p>Best regards,</p>
+            <p>The EduHub Team</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2024 EduHub. All rights reserved.</p>
+            <p><a href="#">Unsubscribe</a> | <a href="#">Contact Us</a></p>
+        </div>
+    </div>
+</body>
+</html>

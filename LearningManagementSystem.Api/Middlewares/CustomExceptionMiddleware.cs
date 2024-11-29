@@ -20,7 +20,6 @@ namespace LearningManagementSystem.Api.Middlewares
                 var errors = new Dictionary<string, string>();
                 var responseMessage = ex.Message;
 
-                // If it's a CustomException, extract the errors
                 if (ex is CustomException customException)
                 {
                     errors = customException.Errors;
@@ -30,7 +29,7 @@ namespace LearningManagementSystem.Api.Middlewares
                 var response = new
                 {
                     message = responseMessage,
-                    errors = errors // Always include the errors dictionary, even if empty
+                    errors = errors 
                 };
 
                 httpContext.Response.ContentType = "application/json";

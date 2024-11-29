@@ -101,16 +101,16 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new CustomException(400, "token is empty");
+                throw new CustomException(400,"token", "token is empty");
             }
             var ExistedRequest=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.VerificationToken.ToLower() == token.ToLower());
             if (ExistedRequest == null)
             {
-                throw new CustomException(404, "not found");
+                throw new CustomException(404, "ExistedRequest", "not found");
             }
             if (ExistedRequest.IsEmailConfirmed)
             {
-                throw new CustomException(400, "Email is already confirmed.");
+                throw new CustomException(400,"Email", "Email is already confirmed.");
             }
             ExistedRequest.IsEmailConfirmed = true;
             await _unitOfWork.RequstToRegisterRepository.Update(ExistedRequest);

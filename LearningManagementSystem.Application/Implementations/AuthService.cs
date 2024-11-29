@@ -30,8 +30,8 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        private readonly IEmailService _emailService;
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -41,6 +41,7 @@ namespace LearningManagementSystem.Application.Implementations
             _context = context;
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
+            _emailService = emailService;
         }
 
         public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
@@ -53,6 +54,29 @@ namespace LearningManagementSystem.Application.Implementations
             Student.AppUserId=appUser.Id;
             await _unitOfWork.StudentRepository.Create(Student);
            await _unitOfWork.Commit();
+            var ExistedRequestRegister = await _unitOfWork.RequstToRegisterRepository.GetEntity(s => s.Email == appUser.Email);
+            if (ExistedRequestRegister != null)
+            {
+                string body;
+                using (StreamReader sr = new StreamReader("wwwroot/templates/SendingAccountInformation.html"))
+                {
+                    body = sr.ReadToEnd();
+                }
+                body = body.Replace("{{UserName}}", appUser.UserName).Replace("{{Password}}",registerDto.Password)
+                    .Replace("{{Email}}", appUser.Email);
+                _emailService.SendEmail(
+                    from: "nihadcoding@gmail.com",
+                    to: appUser.Email,
+                    subject: "Account details",
+                    body: body,
+                    smtpHost: "smtp.gmail.com",
+                    smtpPort: 587,
+                    enableSsl: true,
+                    smtpUser: "nihadcoding@gmail.com",
+                    smtpPass: "gulzclohfwjelppj"
+                );
+
+            }
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
         }
