@@ -33,8 +33,26 @@ namespace LearningManagementSystem.Application.Implementations
             var ResponseCourseDto=_mapper.Map<CourseReturnDto>(MappedCourse);
             return ResponseCourseDto;
         }
+        public async  Task<CourseReturnDto> GetById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new CustomException(440, "Invalid GUID provided.");
+            }
+            var ExistedCourse=await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==id&& s.IsDeleted == false);
+            if (ExistedCourse is null)
+            {
+                throw new CustomException(404, "Course", "Not found");
+            }
+            var MappedCourse = _mapper.Map<CourseReturnDto>(ExistedCourse);
+            return MappedCourse;
+        }
         public async Task<CourseReturnDto> Update(Guid id,CourseUpdateDto courseUpdateDto)
         {
+            if (id == Guid.Empty)
+            {
+                throw new CustomException(440, "Invalid GUID provided.");
+            }
             if (courseUpdateDto.Name != null)
             {
                 if (await _unitOfWork.CourseRepository.isExists(s => s.Name.ToLower() == courseUpdateDto.Name.ToLower()))

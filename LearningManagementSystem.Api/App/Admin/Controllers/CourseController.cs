@@ -25,5 +25,10 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         {
             return Ok(await _courseService.Update(id, courseUpdateDto));
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
+        {
+            return Ok(await _courseService.GetById(id));
+        }
     }
 }

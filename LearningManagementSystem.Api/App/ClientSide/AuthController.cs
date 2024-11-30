@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -34,6 +35,17 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _authService.ChangePassword(changePasswordDto));
         }
-
+        [HttpPost("ResetPasswordSendEmail")]
+        public async Task<IActionResult> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto)
+        {
+          
+            var result = await _authService.ResetPasswordSendEmail(resetPasswordEmailDto);
+            return Ok(result);
+        }
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(string email, string token, ResetPasswordDto resetPasswordDto)
+        {
+            return Ok(await _authService.ResetPassword(email, token, resetPasswordDto));    
+        }
     }
 }

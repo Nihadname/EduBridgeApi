@@ -12,5 +12,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<List<CourseSelectItemDto>> GetAllAsSelectItem();
         Task<CourseReturnDto> Create(CourseCreateDto courseCreateDto);
         Task<CourseReturnDto> Update(Guid id, CourseUpdateDto courseUpdateDto);
+        Task<CourseReturnDto> GetById(Guid id);
     }
 }

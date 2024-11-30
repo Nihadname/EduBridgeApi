@@ -243,6 +243,75 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return result.ToString();
         }
+        public async Task<ResetPasswordEmailDto> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto)
+        {
+            if (string.IsNullOrEmpty(resetPasswordEmailDto.Email))
+            {
+                throw new CustomException(400, "Email is required.");
+            }
+            var user = await GetUserByEmailAsync(resetPasswordEmailDto.Email);
+            
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            resetPasswordEmailDto.Token = token;
+            return resetPasswordEmailDto;
+        }
+        public async Task<string> ResetPassword(string email, string token,ResetPasswordDto resetPasswordDto)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new CustomException(400,"Email", "Email is required.");
+            }
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new CustomException(400,"token", "token is reqeuired.");
+            }
+            await CheckExperySutiationOfToken(email, token);
+            var existedUser = await GetUserByEmailAsync(email);
+            var isNewOrCurrentPassword = await _userManager.CheckPasswordAsync(existedUser, resetPasswordDto.Password);
+            if (isNewOrCurrentPassword)
+            {
+                throw new CustomException(400,"Password", "You cannot use your previous password.");
+            }
+            var result = await _userManager.ResetPasswordAsync(existedUser, token, resetPasswordDto.Password);
+            if (!result.Succeeded) throw new CustomException(400, result.Errors.ToString());
+            await _userManager.UpdateSecurityStampAsync(existedUser);
+            return "password Reseted";
+
+        }
+        public async Task<string> CheckExperySutiationOfToken(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email))
+                throw new CustomException(400, "Email is required.");
+            if (string.IsNullOrEmpty(token))
+                throw new CustomException(400, "Token is required.");
+            var existUser = await _userManager.FindByEmailAsync(email);
+            if (existUser == null) throw new CustomException(404, "User is null or empty");
+            bool result = await _userManager.VerifyUserTokenAsync(
+    existUser,
+    _userManager.Options.Tokens.PasswordResetTokenProvider,
+    "ResetPassword",
+    token
+);
+
+            if (!result)
+                throw new CustomException(400, "The token is either invalid or has expired.");
+            return "hasnt still expired";
+
+        }
+        private async Task<AppUser> GetUserByEmailAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new CustomException(400, "Email is required.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                throw new CustomException(404, "User not found.");
+            }
+            return user;
+        }
 
     }
 }
