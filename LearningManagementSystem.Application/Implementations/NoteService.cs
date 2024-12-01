@@ -44,7 +44,7 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "User", "User  cannot be null");
             }
-            if (existedUser.Notes.Select(s => s.Title).Equals(noteCreateDto.Title))
+            if (existedUser.Notes.Any(s => s.Title.Equals(noteCreateDto.Title, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new CustomException(400, "Title", "User already has Title like this");
             }
