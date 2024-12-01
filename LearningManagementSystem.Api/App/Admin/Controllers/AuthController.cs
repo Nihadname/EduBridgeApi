@@ -44,6 +44,12 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         {
             return Ok(await _authService.RegisterForParent(parentRegisterDto));
         }
-       
+        [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+
+        public async Task<IActionResult> Delete(string id)
+        {
+            return Ok(await _authService.Delete(id));
+        }
     }
 }

@@ -9,14 +9,11 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.DataAccess.Data.Configurations
 {
-    public class NoteConfiguration : IEntityTypeConfiguration<Note>
+    public class ParentConfiguration : IEntityTypeConfiguration<Parent>
     {
-        public void Configure(EntityTypeBuilder<Note> builder)
+        public void Configure(EntityTypeBuilder<Parent> builder)
         {
-            builder.Property(s=>s.Title).HasMaxLength(50);
-            builder.Property(s=> s.Description).HasMaxLength(250);
-            builder.Property(s=>s.CategoryName).HasMaxLength(90);
-            builder.HasOne(s=>s.AppUser).WithMany(a => a.Notes)
+            builder.HasOne(s=>s.AppUser).WithOne(a => a.Parent)
         .OnDelete(DeleteBehavior.Cascade);
         }
     }

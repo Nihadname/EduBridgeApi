@@ -21,7 +21,7 @@ namespace LearningManagementSystem.Application.Implementations
 {
     public class AuthService : IAuthService
     {
-        private UserManager<AppUser> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         
         private readonly JwtSettings _jwtSettings;
         private readonly ITokenService tokenService;
@@ -257,11 +257,11 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<string> ResetPassword(string email, string token,ResetPasswordDto resetPasswordDto)
         {
-            if (string.IsNullOrEmpty(email))
+            if (string.IsNullOrWhiteSpace(email))
             {
                 throw new CustomException(400,"Email", "Email is required.");
             }
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrWhiteSpace(token))
             {
                 throw new CustomException(400,"token", "token is reqeuired.");
             }
@@ -298,6 +298,34 @@ namespace LearningManagementSystem.Application.Implementations
             return "hasnt still expired";
 
         }
+        public async Task<string> Delete(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)|| id is null)
+            {
+                throw new CustomException(400, "Id", "Id can not be null");
+
+            }
+            var existedUser = await _userManager.Users
+     .Include(u => u.Teacher) 
+     .FirstOrDefaultAsync(u => u.Id == id);
+            if (existedUser is null)
+            {
+                throw new CustomException(400, "User", "User can not be null");
+            }
+            if(existedUser.Teacher is not null)
+            {
+                var existedTeacher = await _unitOfWork.TeacherRepository.GetEntity(s => s.AppUserId == existedUser.Id);
+                if(existedTeacher is null)
+                {
+                    throw new CustomException(400, "Teacher", "Teacher can not be null");
+
+                }
+                await _unitOfWork.TeacherRepository.Delete(existedTeacher);
+                await _unitOfWork.Commit();
+            }
+            await _userManager.DeleteAsync(existedUser);
+            return existedUser.Id;
+        }
         private async Task<AppUser> GetUserByEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -312,6 +340,5 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return user;
         }
-
     }
 }

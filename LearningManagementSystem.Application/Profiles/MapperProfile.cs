@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Course;
+using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.RequstToRegister;
 using LearningManagementSystem.Application.Dtos.Teacher;
@@ -31,6 +32,8 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<CourseCreateDto, Course>();
             CreateMap<CourseUpdateDto, Course>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<Note, NoteReturnDto>();
+            CreateMap<NoteCreateDto, Note>();
         }
     }
 }

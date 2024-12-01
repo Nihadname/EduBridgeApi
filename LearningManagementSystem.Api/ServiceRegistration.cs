@@ -64,7 +64,6 @@ namespace LearningManagementSystem.Api
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireDigit = true;
-                options.SignIn.RequireConfirmedEmail = true;
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -126,6 +125,8 @@ namespace LearningManagementSystem.Api
             services.AddScoped<IRequstToRegisterService, RequstToRegisterService>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<INoteRepository, NoteRepository>();
+            services.AddScoped<INoteService, NoteService>();
         }
     }
 }

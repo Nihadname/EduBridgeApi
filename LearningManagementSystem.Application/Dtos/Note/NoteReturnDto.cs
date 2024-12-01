@@ -1,18 +1,15 @@
-﻿using LearningManagementSystem.Core.Entities.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LearningManagementSystem.Core.Entities
+namespace LearningManagementSystem.Application.Dtos.Note
 {
-    public class Note:BaseEntity
+    public class NoteReturnDto
     {
         public string Title { get; set; }
         public string Description { get; set; }
         public string CategoryName { get; set; }
-        public string AppUserId { get; set; }
-        public AppUser AppUser { get; set; }
     }
 }
