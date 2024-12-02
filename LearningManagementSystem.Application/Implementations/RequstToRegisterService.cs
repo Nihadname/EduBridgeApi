@@ -60,7 +60,7 @@ namespace LearningManagementSystem.Application.Implementations
                 {
                     throw new CustomException(400, "Parent", "You identify as a parent so , you have to mention age of your child");
                 }
-                var existedCourse = await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==requstToRegisterCreateDto.ChoosenCourse);
+                var existedCourse = await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==requstToRegisterCreateDto.ChoosenCourse&s.IsDeleted==false);
                 if (existedCourse is null)
                 {
                     throw new CustomException(400, "Course", "this doesnt exist");
@@ -103,7 +103,7 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400,"token", "token is empty");
             }
-            var ExistedRequest=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.VerificationToken.ToLower() == token.ToLower());
+            var ExistedRequest=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.VerificationToken.ToLower() == token.ToLower()&s.IsDeleted==false);
             if (ExistedRequest == null)
             {
                 throw new CustomException(404, "ExistedRequest", "not found");
@@ -164,7 +164,7 @@ Provide advice for the registration.";
             {
                 throw new CustomException(440,"Invalid GUID provided.");
             }
-            var ExistedRequestRegister=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.Id == id);
+            var ExistedRequestRegister=await _unitOfWork.RequstToRegisterRepository.GetEntity(s=>s.Id == id&&s.IsDeleted==false);
             if(ExistedRequestRegister is null)
             {
                 throw new CustomException(400, "RequestRegister", "You identify as a parent so , you have to mention age of your child");

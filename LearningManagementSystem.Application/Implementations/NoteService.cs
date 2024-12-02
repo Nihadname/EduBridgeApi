@@ -34,7 +34,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<NoteReturnDto> Create(NoteCreateDto noteCreateDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 throw new CustomException(400, "Id", "User ID cannot be null");
             }
@@ -84,6 +84,26 @@ namespace LearningManagementSystem.Application.Implementations
             var paginationResult = await PaginationDto<NoteListItemDto>.Create(mappedNotes, pageNumber, pageSize, totalCount);
 
             return paginationResult;
+        }
+        public async Task<string> DeleteForUser(Guid Id)
+        {
+            if (Id == Guid.Empty)
+            {
+                throw new CustomException(440, "Invalid GUID provided.");
+            }
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new CustomException(400, "Id", "User ID cannot be null");
+            }
+            var existedNote = await _unitOfWork.NoteRepository.GetEntity(s => s.IsDeleted == false && s.AppUserId == userId && s.Id == Id);
+            if (existedNote == null)
+            {
+                throw new CustomException(404, "Note", "Note not found");
+            }
+            await _unitOfWork.NoteRepository.Delete(existedNote);
+            await _unitOfWork.Commit();
+            return "succesfully deleted";
         }
     }
 }
