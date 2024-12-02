@@ -14,5 +14,7 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<PaginationDto<NoteListItemDto>> GetAll(int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null);
+        Task<string> DeleteForUser(Guid Id);
+        Task<NoteReturnDto> UpdateForUser(Guid id, NoteUpdateDto noteUpdateDto);
     }
 }

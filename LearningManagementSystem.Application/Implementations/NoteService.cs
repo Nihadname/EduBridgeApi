@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Dtos.Paganation;
 using LearningManagementSystem.Application.Exceptions;
@@ -43,7 +44,7 @@ namespace LearningManagementSystem.Application.Implementations
      .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser == null)
             {
-                throw new CustomException(400, "User", "User  cannot be null");
+                throw new CustomException(404, "User", "User  cannot be null or not  found");
             }
             if (existedUser.Notes.Any(s => s.Title.Equals(noteCreateDto.Title, StringComparison.OrdinalIgnoreCase)))
             {
@@ -87,23 +88,53 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<string> DeleteForUser(Guid Id)
         {
-            if (Id == Guid.Empty)
+            var existedNote = await GetUserWithUserAndIdChecks(Id);
+            await _unitOfWork.NoteRepository.Delete(existedNote);
+            await _unitOfWork.Commit();
+            return "succesfully deleted";
+        }
+        public async Task<NoteReturnDto> UpdateForUser(Guid id,NoteUpdateDto noteUpdateDto)
+        {
+          var existedNote=  await GetUserWithUserAndIdChecks(id);
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existedUser = await _userManager.Users
+                 .Include(u => u.Notes)
+                 .FirstOrDefaultAsync(u => u.Id == userId);
+            if(existedUser is null)
+            {
+                throw new CustomException(404, "User", "User  cannot be null or not found");
+            }
+            if (noteUpdateDto.Title is not null)
+            {
+                if (existedUser.Notes.Any(s => s.Title.Equals(noteUpdateDto.Title, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new CustomException(400, "Title", "User already has Title like this");
+                }
+            }
+            _mapper.Map(noteUpdateDto, existedNote);
+            await _unitOfWork.NoteRepository.Update(existedNote);
+            await _unitOfWork.Commit(); 
+            var MappedNote=_mapper.Map<NoteReturnDto>(existedNote);   
+            return MappedNote;
+
+        }
+        private async Task<Note> GetUserWithUserAndIdChecks(Guid id)
+        {
+            if (id == Guid.Empty)
             {
                 throw new CustomException(440, "Invalid GUID provided.");
             }
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userId))
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new CustomException(400, "Id", "User ID cannot be null");
             }
-            var existedNote = await _unitOfWork.NoteRepository.GetEntity(s => s.IsDeleted == false && s.AppUserId == userId && s.Id == Id);
-            if (existedNote == null)
+            var existedNote = await _unitOfWork.NoteRepository.GetEntity(s => s.IsDeleted == false && s.AppUserId == userId && s.Id == id);
+            if (existedNote is null)
             {
                 throw new CustomException(404, "Note", "Note not found");
             }
-            await _unitOfWork.NoteRepository.Delete(existedNote);
-            await _unitOfWork.Commit();
-            return "succesfully deleted";
+            return existedNote;
         }
     }
 }

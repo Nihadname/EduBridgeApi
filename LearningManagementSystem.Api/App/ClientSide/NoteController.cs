@@ -33,5 +33,19 @@ namespace LearningManagementSystem.Api.App.ClientSide
             var result = await _noteService.GetAll(pageNumber, pageSize, searchQuery);
             return Ok(result);
         }
+        [HttpDelete("{Id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        public async Task<IActionResult> DeleteForUser(Guid Id)
+        {
+            return Ok(await  _noteService.DeleteForUser(Id)); 
+        }
+        [HttpPut("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        public async Task<IActionResult> Update(Guid id, [FromForm] NoteUpdateDto updateDto)
+        {
+            return Ok(await _noteService.UpdateForUser(id, updateDto));
+        }
     }
 }

@@ -35,6 +35,9 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<Note, NoteReturnDto>();
             CreateMap<Note,NoteListItemDto>();
             CreateMap<NoteCreateDto, Note>();
+            CreateMap<NoteUpdateDto, Note>()
+                            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
         }
     }
 }
