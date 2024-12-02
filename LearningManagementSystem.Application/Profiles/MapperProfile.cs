@@ -33,6 +33,7 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<CourseUpdateDto, Course>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<Note, NoteReturnDto>();
+            CreateMap<Note,NoteListItemDto>();
             CreateMap<NoteCreateDto, Note>();
         }
     }

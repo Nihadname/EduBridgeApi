@@ -15,7 +15,7 @@ namespace LearningManagementSystem.Application.Validators.NoteValidators
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Title is required.")
                 .MinimumLength(10).MaximumLength(90).WithMessage("Title must be at least 10 characters long.");
-            RuleFor(x => x.Description).NotEmpty().MinimumLength(10).MaximumLength(180).WithMessage("Description must be at least 10 characters long.");
+            RuleFor(x => x.Description).NotEmpty().MinimumLength(3).MaximumLength(180).WithMessage("Description must be at least 10 characters long.");
             RuleFor(x => x.CategoryName)
               .NotEmpty().WithMessage("CategoryName is required.");
         }

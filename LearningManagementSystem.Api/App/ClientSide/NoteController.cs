@@ -24,5 +24,14 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _noteService.Create(noteCreateDto));
         }
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetAll(int pageNumber = 1,
+           int pageSize = 10,
+           string searchQuery = null)
+        {
+            var result = await _noteService.GetAll(pageNumber, pageSize, searchQuery);
+            return Ok(result);
+        }
     }
 }

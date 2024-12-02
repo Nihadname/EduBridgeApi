@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Note;
+using LearningManagementSystem.Application.Dtos.Paganation;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
@@ -54,6 +55,35 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             var MappedResponse=_mapper.Map<NoteReturnDto>(MappedNote);
             return MappedResponse;
+        }
+        public async Task<PaginationDto<NoteListItemDto>> GetAll(int pageNumber = 1,
+           int pageSize = 10,
+           string searchQuery = null)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new CustomException(400, "Id", "User ID cannot be null");
+            }
+           
+            var notesQuery = await _unitOfWork.NoteRepository.GetQuery(s=>s.AppUserId==userId&&s.IsDeleted==false);
+            if(!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                notesQuery= notesQuery.Where(s => s.Title.Contains(searchQuery) || s.Description.Contains(searchQuery));
+            }
+
+            var totalCount = await notesQuery.CountAsync();
+
+            var paginatedQuery = notesQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            var notesList = await paginatedQuery.ToListAsync();
+            var mappedNotes = _mapper.Map<List<NoteListItemDto>>(notesList);
+
+            var paginationResult = await PaginationDto<NoteListItemDto>.Create(mappedNotes, pageNumber, pageSize, totalCount);
+
+            return paginationResult;
         }
     }
 }
