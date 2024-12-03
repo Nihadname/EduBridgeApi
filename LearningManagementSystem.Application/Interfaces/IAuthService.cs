@@ -21,5 +21,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<string> ResetPassword(string email, string token, ResetPasswordDto resetPasswordDto);
         Task<string> Delete(string id);
         Task<string> GetUserName();
+        Task<UserGetDto> Profile();
     }
 }

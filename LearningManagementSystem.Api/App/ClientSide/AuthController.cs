@@ -54,5 +54,12 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(new {userName= await _authService.GetUserName() });
         }
+        [HttpGet("Profile")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        public async Task<IActionResult> Profile()
+        {
+            return Ok(await _authService.Profile());
+        }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
 using System.Security.Claims;
 
 
@@ -31,7 +32,7 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IHttpContextAccessor contextAccessor)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -42,6 +43,7 @@ namespace LearningManagementSystem.Application.Implementations
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+           
         }
 
         public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
@@ -147,7 +149,7 @@ namespace LearningManagementSystem.Application.Implementations
             appUser.fullName = registerDto.FullName;
             appUser.PhoneNumber = registerDto.PhoneNumber;
 
-            appUser.Image = null;
+            appUser.Image = "user-profile-icon-vector-avatar-600nw-2247726673.webp";
 
             appUser.CreatedTime = DateTime.UtcNow;
             appUser.BirthDate = registerDto.BirthDate;
@@ -342,14 +344,29 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<string> GetUserName()
         {
+            var user = await GetUserWithIdInTheSystem();
+            return user.UserName;
+        }
+        public async Task<UserGetDto> Profile()
+        {
+        var existedUser = await GetUserWithIdInTheSystem();
+            var mappedUser=_mapper.Map<UserGetDto>(existedUser);
+            return mappedUser;
+        }
+        private async Task<AppUser> GetUserWithIdInTheSystem()
+        {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 throw new CustomException(400, "Id", "User ID cannot be null");
             }
             var user = await _userManager.FindByIdAsync(userId);
-            if (user is null) throw new CustomException(403, "this user doesnt exist");
-            return user.UserName;
+            if (user == null)
+            {
+                if (user is null) throw new CustomException(403, "this user doesnt exist");
+            }
+            return user;    
+
         }
     }
 }

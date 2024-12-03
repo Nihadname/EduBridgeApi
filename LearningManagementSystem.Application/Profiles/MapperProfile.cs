@@ -21,9 +21,16 @@ namespace LearningManagementSystem.Application.Profiles
 
         public MapperProfile(IHttpContextAccessor contextAccessor)
         {
-      
+        
+
             _contextAccessor = contextAccessor;
-            CreateMap<AppUser, UserGetDto>();
+            var uriBuilder = new UriBuilder(_contextAccessor.HttpContext.Request.Scheme,
+                        _contextAccessor.HttpContext.Request.Host.Host,
+                        _contextAccessor.HttpContext.Request.Host.Port.Value);
+            var url = uriBuilder.Uri.AbsoluteUri;
+            CreateMap<AppUser, UserGetDto>()
+               .ForMember(s => s.Image, map => map.MapFrom(d => url + "img/" + d.Image))
+             .ForMember(s => s.PhoneNumber, map => map.MapFrom(d => d.PhoneNumber));
             CreateMap<TeacherCreateDto, Teacher>();
             CreateMap<ParentCreateDto, Parent>();
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
