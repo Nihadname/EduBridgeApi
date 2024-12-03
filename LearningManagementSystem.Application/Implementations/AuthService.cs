@@ -340,5 +340,16 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return user;
         }
+        public async Task<string> GetUserName()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new CustomException(400, "Id", "User ID cannot be null");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null) throw new CustomException(403, "this user doesnt exist");
+            return user.UserName;
+        }
     }
 }

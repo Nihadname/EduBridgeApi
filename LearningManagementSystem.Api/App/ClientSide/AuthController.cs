@@ -47,5 +47,12 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _authService.ResetPassword(email, token, resetPasswordDto));    
         }
+        [HttpGet("CheckAuth")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        public async Task<IActionResult> CheckAuth()
+        {
+            return Ok(new {userName= await _authService.GetUserName() });
+        }
     }
 }
