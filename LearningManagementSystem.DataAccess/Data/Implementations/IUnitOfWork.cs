@@ -19,5 +19,6 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public IRequstToRegisterRepository RequstToRegisterRepository { get; }
         public ICourseRepository courseRepository   { get; }
         public INoteRepository NoteRepository { get; }
+        public IReportRepository ReportRepository { get; }
     }
 }

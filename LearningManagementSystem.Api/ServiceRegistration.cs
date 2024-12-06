@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
 using LearningManagementSystem.Application.Implementations;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Profiles;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
 
 namespace LearningManagementSystem.Api
@@ -27,6 +29,8 @@ namespace LearningManagementSystem.Api
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("AppConnectionString"))
         );
+            services.AddHangfire(x => x.UseSqlServerStorage(configuration.GetConnectionString("AppConnectionString")));  
+            services.AddHangfireServer();
             services.AddControllersWithViews()
             .ConfigureApiBehaviorOptions(opt =>
             {
@@ -90,7 +94,8 @@ namespace LearningManagementSystem.Api
            };
        });
 
-            services.AddSwaggerGen(c => {
+            services.AddSwaggerGen(c =>
+            {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "LearningManagementSystem",
@@ -117,16 +122,57 @@ namespace LearningManagementSystem.Api
         }
     });
             });
-            services.AddScoped<ICourseRepository,CourseRepository>();
-            services.AddScoped<IUnitOfWork,UnitOfWork>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IRequstToRegisterRepository, RequstToRegisterRepository>();
-            services.AddScoped<IRequstToRegisterService, RequstToRegisterService>();
-            services.AddScoped<ICourseService, CourseService>();
-            services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<INoteRepository, NoteRepository>();
-            services.AddScoped<INoteService, NoteService>();
+            services.AddRepositories( AppDomain.CurrentDomain.GetAssemblies()
+    .Where(a => a.FullName.Contains("LearningManagementSystem.Core") || a.FullName.Contains("LearningManagementSystem.DataAccess"))
+    .ToList());
+  
+            services.RegisterServices();
+        }
+        public static void AddRepositories(this IServiceCollection services, List<Assembly> assemblies)
+        {
+            foreach (var assembly in assemblies)
+            {
+                var repositoryTypes = assembly.GetTypes()
+                    .Where(type => !type.IsAbstract && !type.IsInterface
+                        && type.GetInterfaces().Any(@interface => @interface.IsGenericType
+                            && @interface.GetGenericTypeDefinition() == typeof(IRepository<>)))  
+                    .ToList();
+
+                foreach (var repositoryType in repositoryTypes)
+                {
+                    var interfaces = repositoryType.GetInterfaces()
+                        .Where(@interface => !@interface.IsGenericType)  
+                        .ToList();
+
+                    if (interfaces.Any())
+                    {
+                        var interfaceToRegister = interfaces.FirstOrDefault();  
+                        services.AddScoped(interfaceToRegister, repositoryType);
+                    }
+                }
+            }
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+        }
+        public static void RegisterServices(this IServiceCollection services)
+        {
+            var applicationAssembly = Assembly.Load("LearningManagementSystem.Application");
+
+            var serviceTypes = applicationAssembly.GetTypes()
+     .Where(t => t.IsClass && !t.IsAbstract)  
+     .Where(t => !t.Name.Contains("Repository", StringComparison.OrdinalIgnoreCase))  
+     .Where(t => t.Name.ToLower().Contains("service")) 
+     .Where(t => t.IsPublic)  
+     .Where(t => t.GetInterfaces().Any()) 
+     .ToList();  
+            foreach (var type in serviceTypes)
+            {
+                foreach (var interfaceType in type.GetInterfaces())
+                {
+                    services.AddScoped(interfaceType, type);  
+                }
+            }
+
         }
     }
 }

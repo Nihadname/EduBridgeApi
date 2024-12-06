@@ -1,3 +1,4 @@
+using Hangfire;
 using LearningManagementSystem.Api;
 using LearningManagementSystem.Api.Middlewares;
 using LearningManagementSystem.Core.Entities;
@@ -34,6 +35,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseHangfireDashboard();
 
 app.UseRouting();
 app.UseCors("AllowAllOrigins");

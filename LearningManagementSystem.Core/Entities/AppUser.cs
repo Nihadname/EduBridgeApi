@@ -47,5 +47,7 @@ namespace LearningManagementSystem.Core.Entities
         public Teacher Teacher { get; set; }
         public Parent Parent { get; set; }
         public ICollection<Note> Notes { get; set; }
+        public ICollection<Report> Reports { get; set; }
+        public bool IsFirstTimeLogined { get; set; }
     }
 }

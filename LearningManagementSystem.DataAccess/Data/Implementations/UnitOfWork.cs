@@ -22,6 +22,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public IRequstToRegisterRepository RequstToRegisterRepository { get; private set; }
         public ICourseRepository  courseRepository { get; private set; }
         public INoteRepository NoteRepository { get; private set; } 
+        public IReportRepository ReportRepository { get; private set; }
         public UnitOfWork(ApplicationDbContext applicationDbContext)
         {
             CourseRepository = new CourseRepository(applicationDbContext);
@@ -31,6 +32,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
             RequstToRegisterRepository= new RequstToRegisterRepository(applicationDbContext);
             CourseRepository = new CourseRepository(applicationDbContext);
             NoteRepository = new NoteRepository(applicationDbContext);
+            ReportRepository = new ReportRepository(applicationDbContext);
             _applicationDbContext = applicationDbContext;
 
         }
