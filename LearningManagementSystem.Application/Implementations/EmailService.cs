@@ -1,12 +1,7 @@
-﻿using LearningManagementSystem.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
+﻿using LearningManagementSystem.Application.Exceptions;
+using LearningManagementSystem.Application.Interfaces;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using LearningManagementSystem.Application.Exceptions;
+using System.Net.Mail;
 
 namespace LearningManagementSystem.Application.Implementations
 {

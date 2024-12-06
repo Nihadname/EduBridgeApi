@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hangfire;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
@@ -14,7 +15,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
 using System.Security.Claims;
 
 
@@ -66,18 +66,17 @@ namespace LearningManagementSystem.Application.Implementations
                 }
                 body = body.Replace("{{UserName}}", appUser.UserName).Replace("{{Password}}",registerDto.Password)
                     .Replace("{{Email}}", appUser.Email);
-                _emailService.SendEmail(
-                    from: "nihadcoding@gmail.com",
-                    to: appUser.Email,
-                    subject: "Account details",
-                    body: body,
-                    smtpHost: "smtp.gmail.com",
-                    smtpPort: 587,
-                    enableSsl: true,
-                    smtpUser: "nihadcoding@gmail.com",
-                    smtpPass: "gulzclohfwjelppj"
-                );
-
+                BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                   "nihadcoding@gmail.com",
+                   appUser.Email,
+                   "Account details",
+                   body,
+                   "smtp.gmail.com",
+                   587,
+                   true,
+                   "nihadcoding@gmail.com",
+                   "gulzclohfwjelppj"
+               ));
             }
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
@@ -153,6 +152,7 @@ namespace LearningManagementSystem.Application.Implementations
 
             appUser.CreatedTime = DateTime.UtcNow;
             appUser.BirthDate = registerDto.BirthDate;
+            appUser.IsFirstTimeLogined=true;
             var result = await _userManager.CreateAsync(appUser, registerDto.Password);
           
             if (!result.Succeeded)
@@ -173,6 +173,24 @@ namespace LearningManagementSystem.Application.Implementations
                 {
                     throw new CustomException(400, "UserNameOrGmail", "userName or email is wrong\"");
                 }
+            }
+            if (User.IsFirstTimeLogined)
+            {
+                User.IsFirstTimeLogined = false;
+                await _userManager.UpdateAsync(User);
+                var body = "<h1>Welcome!</h1><p>Thank you for joining us. We're excited to have you!</p>"; 
+                BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                    "nihadcoding@gmail.com", 
+                    User.Email,               
+                    "Welcome to Our System!",
+                    body,                   
+                    "smtp.gmail.com",         
+                    587,                      
+                    true,                     
+                    "nihadcoding@gmail.com",  
+                    "gulzclohfwjelppj"       
+                ));
+
             }
             var result = await _userManager.CheckPasswordAsync(User, loginDto.Password);
 

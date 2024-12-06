@@ -4,11 +4,6 @@ using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data.Implementations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {

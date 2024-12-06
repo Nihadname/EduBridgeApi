@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Note;
-using LearningManagementSystem.Application.Dtos.Paganation;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
@@ -9,12 +7,7 @@ using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hangfire;
 using LearningManagementSystem.Application.Dtos.Ai;
 using LearningManagementSystem.Application.Dtos.RequstToRegister;
 using LearningManagementSystem.Application.Exceptions;
@@ -8,12 +9,7 @@ using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -82,18 +78,19 @@ namespace LearningManagementSystem.Application.Implementations
                 scheme: _contextAccessor.HttpContext.Request.Scheme,
                host: _contextAccessor.HttpContext.Request.Host
             );
-            string body = link;
-            _emailService.SendEmail(
-                 from: "nihadcoding@gmail.com",
-                 to: requstToRegisterCreateDto.Email,
-                 subject: "Verify Account",
-                        body: $"Click <a href='{link}'>here</a> to verify your account.",
-                 smtpHost: "smtp.gmail.com",
-                 smtpPort: 587,
-                 enableSsl: true,
-                 smtpUser: "nihadcoding@gmail.com",
-                 smtpPass: "gulzclohfwjelppj"
-             );
+         
+            BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                  "nihadcoding@gmail.com",
+                  requstToRegisterCreateDto.Email,
+                  "Verify Account",
+                  $"Click <a href='{link}'>here</a> to verify your account.",
+                  "smtp.gmail.com",
+                  587,
+                  true,
+                  "nihadcoding@gmail.com",
+                  "gulzclohfwjelppj"
+              ));
+           
             return requstToRegisterCreateDto.AiResponse;
 
         }
@@ -183,18 +180,18 @@ Provide advice for the registration.";
             }
             body = body.Replace("{{FullName}}", ExistedRequestRegister.FullName);
 
-          
-                _emailService.SendEmail(
-                    from: "nihadcoding@gmail.com",
-                    to: ExistedRequestRegister.Email,
-                    subject: "Request already saved and accepted",
-                    body: body,
-                    smtpHost: "smtp.gmail.com",
-                    smtpPort: 587,
-                    enableSsl: true,
-                    smtpUser: "nihadcoding@gmail.com",
-                    smtpPass: "gulzclohfwjelppj"
-                );
+            BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                   "nihadcoding@gmail.com",
+                   ExistedRequestRegister.Email,
+                   "Request already saved and accepted",
+                   body,
+                   "smtp.gmail.com",
+                   587,
+                   true,
+                   "nihadcoding@gmail.com",
+                   "gulzclohfwjelppj"
+               ));
+           
 
                 return "Email sent successfully.";
             
