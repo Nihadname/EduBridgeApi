@@ -153,6 +153,7 @@ namespace LearningManagementSystem.Application.Implementations
             appUser.CreatedTime = DateTime.UtcNow;
             appUser.BirthDate = registerDto.BirthDate;
             appUser.IsFirstTimeLogined=true;
+            appUser.IsReportedHighly=false;
             var result = await _userManager.CreateAsync(appUser, registerDto.Password);
           
             if (!result.Succeeded)

@@ -3,6 +3,7 @@ using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Dtos.Parent;
+using LearningManagementSystem.Application.Dtos.Report;
 using LearningManagementSystem.Application.Dtos.RequstToRegister;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Core.Entities;
@@ -44,7 +45,10 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<NoteCreateDto, Note>();
             CreateMap<NoteUpdateDto, Note>()
                             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-
+            CreateMap<ReportCreateDto, Report>();
+            CreateMap<AppUser, UserReportReturnDto>();
+            CreateMap<ReportOption, ReportOptionInReportReturnDto>();
+            CreateMap<Report, ReportReturnDto>();   
         }
     }
 }

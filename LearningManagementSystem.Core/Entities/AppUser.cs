@@ -49,5 +49,6 @@ namespace LearningManagementSystem.Core.Entities
         public ICollection<Note> Notes { get; set; }
         public ICollection<Report> Reports { get; set; }
         public bool IsFirstTimeLogined { get; set; }
+        public bool IsReportedHighly { get; set; }
     }
 }

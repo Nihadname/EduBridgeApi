@@ -20,5 +20,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public ICourseRepository courseRepository   { get; }
         public INoteRepository NoteRepository { get; }
         public IReportRepository ReportRepository { get; }
+        public IReportOptionRepository ReportOptionRepository { get; }
+        
     }
 }
