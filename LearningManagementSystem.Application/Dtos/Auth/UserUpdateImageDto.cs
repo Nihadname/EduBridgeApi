@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Auth
 {
-    public class UserUpdateImageDto
+    public record UserUpdateImageDto
     {
         public IFormFile Image {get; set;}
     }

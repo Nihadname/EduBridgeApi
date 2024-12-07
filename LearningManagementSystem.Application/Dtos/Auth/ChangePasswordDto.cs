@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Auth
 {
-    public class ChangePasswordDto
+    public record ChangePasswordDto
     {
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }

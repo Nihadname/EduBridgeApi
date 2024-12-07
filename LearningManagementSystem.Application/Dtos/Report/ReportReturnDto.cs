@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Report
 {
-    public class ReportReturnDto
+    public record ReportReturnDto
     {
         public string Description { get; set; }
         public UserReportReturnDto userReportReturnDto { get; set; }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Note
 {
-    public class NoteUpdateDto
+    public record NoteUpdateDto
     {
         public string Title { get; set; }
         public string Description { get; set; }

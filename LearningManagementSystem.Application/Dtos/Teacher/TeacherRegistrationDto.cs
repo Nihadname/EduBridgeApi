@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Teacher
 {
-    public class TeacherRegistrationDto
+    public record TeacherRegistrationDto
     {
         public RegisterDto Register { get; set; }
         public TeacherCreateDto Teacher { get; set; }

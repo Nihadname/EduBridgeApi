@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Auth
 {
-    public class LoginDto
+    public record LoginDto
     {
         public string UserNameOrGmail { get; set; }
         public string Password { get; set; }

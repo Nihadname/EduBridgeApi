@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.RequstToRegister
 {
-    public class RequstToRegisterCreateDto
+    public record RequstToRegisterCreateDto
     {
         public string FullName { get; set; }
         public int Age { get;  set; }
