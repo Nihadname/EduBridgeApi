@@ -166,10 +166,10 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<AuthResponseDto> Login(LoginDto loginDto)
         {
-            var User = await _userManager.FindByEmailAsync(loginDto.UserNameOrGmail);
+            var User = await _userManager.Users.Include(s => s.Reports).FirstOrDefaultAsync(s => s.Email.ToLower() == loginDto.UserNameOrGmail.ToLower());
             if (User == null)
             {
-                User = await _userManager.FindByNameAsync(loginDto.UserNameOrGmail);
+                User = await _userManager.Users.Include(s => s.Reports).FirstOrDefaultAsync(s => s.UserName.ToLower() == loginDto.UserNameOrGmail.ToLower());
                 if (User == null)
                 {
                     throw new CustomException(400, "UserNameOrGmail", "userName or email is wrong\"");
@@ -214,6 +214,10 @@ namespace LearningManagementSystem.Application.Implementations
                    
                     throw new CustomException(403, "UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}");
                 }
+            }
+            if (User.Reports.Count >= 6)
+            {
+                throw new CustomException(400, "Report", "your account is reported too many times");
             }
 
             IList<string> roles = await _userManager.GetRolesAsync(User);

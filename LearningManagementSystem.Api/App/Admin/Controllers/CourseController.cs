@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LearningManagementSystem.Api.App.Admin.Controllers
 {
-    [Route("api/[controller]")]
+    [Area("Admin")]
+    [Route("api/[area]/[controller]")]
     [ApiController]
     public class CourseController : ControllerBase
     {

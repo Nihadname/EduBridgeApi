@@ -59,7 +59,7 @@ namespace LearningManagementSystem.Application.Implementations
                     throw new CustomException(400, "Reports", "amount of reports you can have reached limit");
                 }
             }
-            if (count > 3)
+            if (count >= 3)
             {
                 throw new CustomException(400, "Reports", "amount of reports you can have reached limit");
             }
