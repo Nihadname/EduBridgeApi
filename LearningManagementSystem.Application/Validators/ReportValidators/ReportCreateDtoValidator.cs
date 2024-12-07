@@ -14,6 +14,7 @@ namespace LearningManagementSystem.Application.Validators.ReportValidators
         {
             RuleFor(s=>s.Description).NotEmpty().MinimumLength(4).MaximumLength(400);
             RuleFor(s => s.ReportOptionId).NotEmpty();
+            RuleFor(s => s.ReportedUserId).NotEmpty();
         }
     }
 }

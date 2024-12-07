@@ -22,7 +22,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s => s.IsBlocked).HasDefaultValue(false);
             builder.Property(s => s.BirthDate).IsRequired(true);
             builder.HasCheckConstraint("CK_User_MinimumAge", "DATEDIFF(YEAR, BirthDate, GETDATE()) >= 15");
-
+            builder.HasMany(s => s.Reports).WithOne(s => s.AppUser).HasForeignKey(s => s.AppUserId);
 
         }
     }

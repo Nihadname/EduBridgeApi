@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hangfire;
 using LearningManagementSystem.Application.Dtos.Report;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
@@ -20,14 +21,16 @@ namespace LearningManagementSystem.Application.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IHttpContextAccessor  _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<AppUser> _userManager;
-        public ReportService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor contextAccessor, UserManager<AppUser> userManager)
+        private readonly IEmailService _emailService;
+        public ReportService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor contextAccessor, UserManager<AppUser> userManager, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _httpContextAccessor = contextAccessor;
             _userManager = userManager;
+            _emailService = emailService;
         }
         public async Task<ReportReturnDto> Create(ReportCreateDto reportCreateDto)
         {
@@ -41,33 +44,74 @@ namespace LearningManagementSystem.Application.Implementations
                  .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser is null)
             {
-                throw new CustomException(400, "User", "User  cannot be null");
+                throw new CustomException(404, "User", "User  cannot be null");
             }
             reportCreateDto.AppUserId = userId;
-            if(await _unitOfWork.ReportOptionRepository.isExists(s => s.Id != reportCreateDto.ReportOptionId))
+            var ReportedUser = await _userManager.Users.FirstOrDefaultAsync(s => s.Id == reportCreateDto.ReportedUserId);
+            if (ReportedUser is null)
+            {
+                throw new CustomException(400, "ReportedUserId", "Reported user not found");
+            }
+            if (await _unitOfWork.ReportOptionRepository.isExists(s => s.Id != reportCreateDto.ReportOptionId))
             {
                 throw new CustomException(400, "ReportOptionId", "ReportOption  is invalid");
             }
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
-            var count = (await _unitOfWork.ReportRepository.GetAll(s=>s.AppUserId==existedUser.Id && s.CreatedTime >= today && s.CreatedTime < tomorrow)).Count();
-            var allReportOptions = await _unitOfWork.ReportRepository.GetAll(s => s.IsDeleted == false);
-            if (allReportOptions.Any())
-            {
-                if (count >= allReportOptions.Count())
-                {
-                    throw new CustomException(400, "Reports", "amount of reports you can have reached limit");
-                }
-            }
+            var userReports = existedUser.Reports.ToList();
+            var count = existedUser.Reports.Count(s => s.CreatedTime >= today && s.CreatedTime < tomorrow);
+          
             if (count >= 3)
             {
                 throw new CustomException(400, "Reports", "amount of reports you can have reached limit");
             }
-            var MappedReport=_mapper.Map<Report>(reportCreateDto);  
+            var MappedReport = _mapper.Map<Report>(reportCreateDto);
             await _unitOfWork.ReportRepository.Create(MappedReport);
             await _unitOfWork.Commit();
-            var MappedReturnedReportDto=_mapper.Map<ReportReturnDto>(MappedReport);
+            var countOfReportedUser=await _unitOfWork.ReportRepository.GetAll(s=>s.ReportedUserId==ReportedUser.Id);
+            if (countOfReportedUser.Count() >= 3 && !ReportedUser.IsReportedHighly)
+            {
+                ReportedUser.IsReportedHighly = true;
+                await  _userManager.UpdateAsync(ReportedUser);
+            }
+            var MappedReturnedReportDto = _mapper.Map<ReportReturnDto>(MappedReport);
             return MappedReturnedReportDto;
+        }
+        public async Task<string> VerifyReport(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new CustomException(440, "Invalid GUID provided.");
+            }
+            var existedReport = await _unitOfWork.ReportRepository.GetEntity(s => s.Id == id && s.IsDeleted == false, includes: new Func<IQueryable<Report>, IQueryable<Report>>[] {
+                 query => query
+            .Include(p => p.AppUser)
+            });
+
+            if (existedReport == null)
+            {
+                throw new CustomException(400, "existedReport", "existedReport  not found");
+            }
+            if (!existedReport.IsVerified)
+            {
+                existedReport.IsVerified = true;
+                await _unitOfWork.ReportRepository.Update(existedReport);
+                await _unitOfWork.Commit();
+            }
+            var body = "<h1>Welcome!</h1><p>Report already saved and accepted. We're excited to have you!</p>";
+
+            BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                   "nihadcoding@gmail.com",
+                   existedReport.AppUser.Email,
+                   "Report already saved and accepted",
+                   body,
+                   "smtp.gmail.com",
+                   587,
+                   true,
+                   "nihadcoding@gmail.com",
+                   "gulzclohfwjelppj"
+               ));
+            return "Approved By Admin";
         }
     }
 }

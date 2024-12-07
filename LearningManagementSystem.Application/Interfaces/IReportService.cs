@@ -10,5 +10,6 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface IReportService
     {
         Task<ReportReturnDto> Create(ReportCreateDto reportCreateDto);
+        Task<string> VerifyReport(Guid id);
     }
 }

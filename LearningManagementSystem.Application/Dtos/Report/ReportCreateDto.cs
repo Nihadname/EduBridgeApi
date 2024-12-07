@@ -12,6 +12,7 @@ namespace LearningManagementSystem.Application.Dtos.Report
         public string Description { get; set; }
         [JsonIgnore]
         public string AppUserId { get; set; }
+        public string ReportedUserId { get; set; }
         public Guid ReportOptionId { get; set; }
     }
 }
