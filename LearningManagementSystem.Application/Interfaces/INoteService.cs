@@ -16,5 +16,6 @@ namespace LearningManagementSystem.Application.Interfaces
            string searchQuery = null);
         Task<string> DeleteForUser(Guid Id);
         Task<NoteReturnDto> UpdateForUser(Guid id, NoteUpdateDto noteUpdateDto);
+        Task<NoteReturnDto> GetById(Guid id);
     }
 }

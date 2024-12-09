@@ -15,7 +15,7 @@ namespace LearningManagementSystem.Application.Validators.NoteValidators
             RuleFor(x => x.Title)
             .NotEmpty()
             .MinimumLength(3)
-            .MaximumLength(160)
+            .MaximumLength(50)
             .When(x => x.Title != null);
             RuleFor(x => x.CategoryName)
             .NotEmpty()

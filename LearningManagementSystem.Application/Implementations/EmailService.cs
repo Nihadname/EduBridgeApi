@@ -7,27 +7,7 @@ namespace LearningManagementSystem.Application.Implementations
 {
     public class EmailService : IEmailService
     {
-        public void SendEmailOld(List<string> emails, string body, string title, string subject)
-        {
-            MailMessage mail = new();
-            mail.From = new MailAddress("tahiraa@code.edu.az", "PlaystationAze");
-            foreach (var email in emails)
-            {
-                mail.To.Add(new MailAddress(email));
-            }
-            mail.Subject = subject;
-            mail.IsBodyHtml = true;
-            mail.Body = body;
-
-            SmtpClient smtpClient = new()
-            {
-                Host = "smtp.gmail.com",
-                Port = 587,
-                EnableSsl = true,
-                Credentials = new NetworkCredential("tahiraa@code.edu.az", "blcf yubd mxnb gcyb"),
-            };
-            smtpClient.Send(mail);
-        }
+  
         public void SendEmail(string from, string to, string subject, string body, string smtpHost, int smtpPort, bool enableSsl, string smtpUser, string smtpPass)
         {
             try

@@ -25,6 +25,7 @@ namespace LearningManagementSystem.Application.Implementations
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
+        
         public async Task<NoteReturnDto> Create(NoteCreateDto noteCreateDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -34,7 +35,7 @@ namespace LearningManagementSystem.Application.Implementations
             }
             var existedUser = await _userManager.Users
      .Include(u => u.Notes)
-     .FirstOrDefaultAsync(u => u.Id == userId);
+       .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser == null)
             {
                 throw new CustomException(404, "User", "User  cannot be null or not  found");
@@ -128,6 +129,12 @@ namespace LearningManagementSystem.Application.Implementations
                 throw new CustomException(404, "Note", "Note not found");
             }
             return existedNote;
+        }
+        public async Task<NoteReturnDto> GetById(Guid id)
+        {
+            var existedNote = await GetUserWithUserAndIdChecks(id);
+            var MappedNote = _mapper.Map<NoteReturnDto>(existedNote);
+            return MappedNote;
         }
     }
 }

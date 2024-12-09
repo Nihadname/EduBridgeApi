@@ -47,5 +47,11 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _noteService.UpdateForUser(id, updateDto));
         }
+        [HttpGet("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> Get(Guid id)
+        {
+            return Ok(await _noteService.GetById(id));
+        }
     }
 }
