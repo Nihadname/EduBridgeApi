@@ -115,7 +115,6 @@ namespace LearningManagementSystem.Application.Implementations
                     else
                     {
                         throw new CustomException(400, "StudentId", "the choosen student  doesnt exist");
-
                     }
                 }
                 MappedParent.Students = Students;

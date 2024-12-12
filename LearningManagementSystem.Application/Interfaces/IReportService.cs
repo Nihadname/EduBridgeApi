@@ -11,5 +11,7 @@ namespace LearningManagementSystem.Application.Interfaces
     {
         Task<ReportReturnDto> Create(ReportCreateDto reportCreateDto);
         Task<string> VerifyReport(Guid id);
+        Task<string> DeleteForUser(Guid id);
+        Task<string> DeleteForAdmin(Guid id);
     }
 }

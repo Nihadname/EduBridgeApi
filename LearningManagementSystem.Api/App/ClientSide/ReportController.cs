@@ -24,5 +24,13 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _reportService.Create(reportCreateDto));
         }
+        [HttpDelete("{id}")]
+     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            return Ok(new { message = await _reportService.DeleteForUser(id) });
+
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using LearningManagementSystem.Application.Interfaces;
+﻿using LearningManagementSystem.Application.Dtos.Ai;
+using LearningManagementSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +23,12 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         public async Task<IActionResult> VerifyReport(Guid id)
         {
             return Ok(await _reportService.VerifyReport(id));
+        }
+        [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            return Ok(new { message = await _reportService.DeleteForAdmin(id) }); 
         }
     }
 }

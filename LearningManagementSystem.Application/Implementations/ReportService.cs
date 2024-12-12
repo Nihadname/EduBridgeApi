@@ -113,5 +113,35 @@ namespace LearningManagementSystem.Application.Implementations
                ));
             return "Approved By Admin";
         }
+        public async Task<string> DeleteForUser(Guid id)
+        {
+            var userReport = await GetUserReport(id);
+            userReport.IsDeleted = true;
+            await _unitOfWork.ReportRepository.Update(userReport);
+            await _unitOfWork.Commit();
+            return "Deleted";
+        }
+        public async Task<string> DeleteForAdmin(Guid id)
+        {
+         var userReport=   await GetUserReport(id);
+            await _unitOfWork.ReportRepository.Delete(userReport);  
+            await _unitOfWork.Commit();
+            return "Deleted By Admin";
+        }
+        private async Task<Report> GetUserReport(Guid id)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new CustomException(400, "Id", "User ID cannot be null");
+            }
+            if (id == Guid.Empty)
+            {
+                throw new CustomException(440, "Invalid GUID provided.");
+            }
+            var existedReport = await _unitOfWork.ReportRepository.GetEntity(s => s.Id == id && s.AppUserId == userId && s.IsDeleted == false);
+            if (existedReport is null) throw new CustomException(400, "existedReport", "existedReport  not found");
+            return existedReport;
+        }
     }
 }
