@@ -48,7 +48,11 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<ReportCreateDto, Report>();
             CreateMap<AppUser, UserReportReturnDto>();
             CreateMap<ReportOption, ReportOptionInReportReturnDto>();
-            CreateMap<Report, ReportReturnDto>();   
+            CreateMap<Report, ReportReturnDto>()
+                               .ForMember(s => s.userReportReturnDto, map => map.MapFrom(d => d.AppUser))
+                               .ForPath(s => s.optionInReportReturnDto.Id, map => map.MapFrom(d => d.ReportOption.Id))
+                               .ForPath(s => s.optionInReportReturnDto.Name, map => map.MapFrom(d => d.ReportOption.Name));
+
         }
     }
 }

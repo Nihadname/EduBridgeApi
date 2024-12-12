@@ -52,6 +52,10 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "ReportedUserId", "Reported user not found");
             }
+            if (ReportedUser.Id == existedUser.Id)
+            {
+                throw new CustomException(404, "User", "User  cannot report himself");
+            }
             if (await _unitOfWork.ReportOptionRepository.isExists(s => s.Id != reportCreateDto.ReportOptionId))
             {
                 throw new CustomException(400, "ReportOptionId", "ReportOption  is invalid");
@@ -74,7 +78,11 @@ namespace LearningManagementSystem.Application.Implementations
                 ReportedUser.IsReportedHighly = true;
                 await  _userManager.UpdateAsync(ReportedUser);
             }
-            var MappedReturnedReportDto = _mapper.Map<ReportReturnDto>(MappedReport);
+            var IncludedMappedReport=await _unitOfWork.ReportRepository.GetEntity(s=>s.Id==MappedReport.Id, includes: new Func<IQueryable<Report>, IQueryable<Report>>[]
+            {
+                query => query.Include(s=>s.ReportedUser).Include(s=>s.ReportOption)
+            });    
+            var MappedReturnedReportDto = _mapper.Map<ReportReturnDto>(IncludedMappedReport);
             return MappedReturnedReportDto;
         }
         public async Task<string> VerifyReport(Guid id)
