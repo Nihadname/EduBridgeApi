@@ -1,8 +1,7 @@
-﻿using LearningManagementSystem.Application.Dtos.Paganation;
-
-public class PaginationDto<T> : IPaganationDto
+﻿
+public class PaginationDto<T> 
 {
-    public PaginationDto(List<T> items, int currentPage, int totalPages, int totalRecords, int pageSize)
+    public PaginationDto(IEnumerable<T> items, int currentPage, int totalPages, int totalRecords, int pageSize)
     {
         Items = items;
         CurrentPage = currentPage;
@@ -11,7 +10,7 @@ public class PaginationDto<T> : IPaganationDto
         PageSize = pageSize;
     }
 
-    public List<T> Items { get; set; }
+    public IEnumerable<T> Items { get; set; }
     public int CurrentPage { get; set; }
     public int TotalPages { get; set; }
     public int TotalRecords { get; set; }
@@ -21,10 +20,11 @@ public class PaginationDto<T> : IPaganationDto
     public bool HasPrev => CurrentPage > 1;
 
 
-    // Create method to simplify pagination logic
-    public static async Task<PaginationDto<T>> Create(List<T> items, int page, int take, int totalCount)
+    public static async Task<PaginationDto<T>> Create(IEnumerable<T> items, int page, int take, int totalCount)
     {
         var totalPages = (int)Math.Ceiling((decimal)totalCount / take);
+     items=  items.Skip((page - 1) * take)
+                .Take(take);
         return new PaginationDto<T>(items, page, totalPages, totalCount, take);
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -17,15 +18,16 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public NoteService(IMapper mapper, IUnitOfWork unitOfWork, UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor)
+        private readonly IFusionCache _cache;
+        public NoteService(IMapper mapper, IUnitOfWork unitOfWork, UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor, IFusionCache cache)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
+            _cache = cache;
         }
-        
+
         public async Task<NoteReturnDto> Create(NoteCreateDto noteCreateDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -69,14 +71,11 @@ namespace LearningManagementSystem.Application.Implementations
 
             var totalCount = await notesQuery.CountAsync();
 
-            var paginatedQuery = notesQuery
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
+            var paginatedQuery =(IEnumerable<Note>)await notesQuery.ToListAsync();
 
-            var notesList = await paginatedQuery.ToListAsync();
-            var mappedNotes = _mapper.Map<List<NoteListItemDto>>(notesList);
+            var mappedNotes = _mapper.Map<List<NoteListItemDto>>(paginatedQuery);
 
-            var paginationResult = await PaginationDto<NoteListItemDto>.Create(mappedNotes, pageNumber, pageSize, totalCount);
+            var paginationResult = await PaginationDto<NoteListItemDto>.Create((IEnumerable<NoteListItemDto>)mappedNotes, pageNumber, pageSize, totalCount);
 
             return paginationResult;
         }
@@ -123,12 +122,17 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "Id", "User ID cannot be null");
             }
-            var existedNote = await _unitOfWork.NoteRepository.GetEntity(s => s.IsDeleted == false && s.AppUserId == userId && s.Id == id);
-            if (existedNote is null)
+            var cacheKey = $"Note_{id}";
+            var cachedNote = await _cache.GetOrSetAsync<Note>(cacheKey, async _ =>
+            {
+                var existedNote = await _unitOfWork.NoteRepository.GetEntity(s => s.IsDeleted == false && s.AppUserId == userId && s.Id == id);
+                return existedNote;
+            });
+            if (cachedNote is null)
             {
                 throw new CustomException(404, "Note", "Note not found");
             }
-            return existedNote;
+          return  cachedNote;
         }
         public async Task<NoteReturnDto> GetById(Guid id)
         {

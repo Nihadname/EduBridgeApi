@@ -1,5 +1,4 @@
 ﻿using LearningManagementSystem.Application.Dtos.Note;
-using LearningManagementSystem.Application.Dtos.Paganation;
 using System;
 using System.Collections.Generic;
 using System.Linq;

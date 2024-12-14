@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
-using LearningManagementSystem.Application.Implementations;
-using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Profiles;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Application.Validators.AuthValidators;
@@ -15,10 +13,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace LearningManagementSystem.Api
 {
@@ -127,6 +127,16 @@ namespace LearningManagementSystem.Api
     .ToList());
   
             services.RegisterServices();
+            services.AddMemoryCache();
+
+            services.AddFusionCache()
+                .WithDefaultEntryOptions(new FusionCacheEntryOptions
+                {
+                    Duration = TimeSpan.FromMinutes(2),
+                    Priority = CacheItemPriority.High,
+
+                });
+            
         }
         public static void AddRepositories(this IServiceCollection services, List<Assembly> assemblies)
         {
