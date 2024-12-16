@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Report
 {
-    public record ReportCreateDto
+    public class ReportCreateDto
     {
         public string Description { get; set; }
         [JsonIgnore]

@@ -8,7 +8,7 @@ namespace LearningManagementSystem.Application.Dtos.Auth
 {
     public record ResetPasswordDto
     {
-        public string Password { get; set; }
-        public string RePassword { get; set; }
+        public string Password { get; init; }
+        public string RePassword { get; init; }
     }
 }

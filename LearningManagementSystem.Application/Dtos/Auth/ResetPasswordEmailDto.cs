@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Auth
 {
-    public record ResetPasswordEmailDto
+    public class ResetPasswordEmailDto
     {
         public string Email { get; set; }
         public string Token { get; set; }

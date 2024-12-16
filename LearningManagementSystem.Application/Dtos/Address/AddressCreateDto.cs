@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Address
 {
-    public record  AddressCreateDto
+    public class  AddressCreateDto
     {
         public string Country { get; set; }
         public string City { get; set; }

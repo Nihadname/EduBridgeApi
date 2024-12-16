@@ -8,8 +8,8 @@ namespace LearningManagementSystem.Application.Dtos.Note
 {
     public record NoteUpdateDto
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string CategoryName { get; set; }
+        public string Title { get; init; }
+        public string Description { get; init; }
+        public string CategoryName { get; init; }
     }
 }

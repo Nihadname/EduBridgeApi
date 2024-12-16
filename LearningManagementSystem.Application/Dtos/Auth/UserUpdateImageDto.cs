@@ -9,6 +9,6 @@ namespace LearningManagementSystem.Application.Dtos.Auth
 {
     public record UserUpdateImageDto
     {
-        public IFormFile Image {get; set;}
+        public IFormFile Image {get; init; }
     }
 }

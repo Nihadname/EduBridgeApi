@@ -1,4 +1,5 @@
-﻿using LearningManagementSystem.Application.Dtos.Note;
+﻿using BenchmarkDotNet.Attributes;
+using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +27,7 @@ namespace LearningManagementSystem.Api.App.ClientSide
         }
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Benchmark]
         public async Task<IActionResult> GetAll(int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null)
@@ -49,8 +51,10 @@ namespace LearningManagementSystem.Api.App.ClientSide
         }
         [HttpGet("{id}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Benchmark]
         public async Task<IActionResult> Get(Guid id)
         {
+            
             return Ok(await _noteService.GetById(id));
         }
     }

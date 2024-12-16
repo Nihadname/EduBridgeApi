@@ -8,7 +8,7 @@ namespace LearningManagementSystem.Application.Dtos.Auth
 {
     public record AuthResponseDto
     {
-        public bool IsSuccess { get; set; }
-        public string Token { get; set; }
+        public bool IsSuccess { get; init; }
+        public string Token { get; init; }
     }
 }

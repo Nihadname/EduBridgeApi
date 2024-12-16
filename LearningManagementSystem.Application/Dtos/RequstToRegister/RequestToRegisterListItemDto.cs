@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.RequstToRegister
 {
-    public record RequstToRegisterCreateDto
+    public record RequestToRegisterListItemDto
     {
         public string FullName { get; init; }
         public int Age { get; init; }
@@ -16,6 +16,5 @@ namespace LearningManagementSystem.Application.Dtos.RequstToRegister
         public string ChildName { get; init; }
         public int? ChildAge { get; init; }
         public string Email { get; init; }
-        public string AiResponse { get; init; }
     }
 }

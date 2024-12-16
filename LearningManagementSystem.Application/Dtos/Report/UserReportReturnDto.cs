@@ -8,6 +8,6 @@ namespace LearningManagementSystem.Application.Dtos.Report
 {
     public record UserReportReturnDto
     {
-        public string UserName { get; set; }
+        public string UserName { get; init; }
     }
 }

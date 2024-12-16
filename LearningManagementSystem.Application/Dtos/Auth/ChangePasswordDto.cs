@@ -8,8 +8,8 @@ namespace LearningManagementSystem.Application.Dtos.Auth
 {
     public record ChangePasswordDto
     {
-        public string CurrentPassword { get; set; }
-        public string NewPassword { get; set; }
-        public string ConfirmPassword { get; set; }
+        public string CurrentPassword { get; init; }
+        public string NewPassword { get; init; }
+        public string ConfirmPassword { get; init; }
     }
 }

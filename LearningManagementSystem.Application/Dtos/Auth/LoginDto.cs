@@ -8,7 +8,7 @@ namespace LearningManagementSystem.Application.Dtos.Auth
 {
     public record LoginDto
     {
-        public string UserNameOrGmail { get; set; }
-        public string Password { get; set; }
+        public string UserNameOrGmail { get; init; }
+        public string Password { get; init; }
     }
 }

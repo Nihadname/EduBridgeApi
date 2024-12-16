@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LearningManagementSystem.Application.Dtos.Course
+namespace LearningManagementSystem.Application.Dtos.ReportOption
 {
-    public record CourseReturnDto
+    public record ReportOptionCreateDto
     {
         public string Name { get; init; }
-        public string Description { get; init; }
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Parent
 {
-    public record ParentRegisterDto
+    public class ParentRegisterDto
     {
         public RegisterDto Register { get; set; }
         public ParentCreateDto Parent { get; set; }
