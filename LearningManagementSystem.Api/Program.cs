@@ -6,6 +6,7 @@ using LearningManagementSystem.DataAccess.Data;
 using LearningManagementSystem.DataAccess.SeedDatas;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -19,7 +20,11 @@ builder.Services.AddCors(options =>
 });
 // Add services to the container.
 var config=builder.Configuration;
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+       .AddJsonOptions(options =>
+       {
+           options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+       });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

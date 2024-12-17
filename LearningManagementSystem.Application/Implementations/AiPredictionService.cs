@@ -2,15 +2,13 @@
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {
-    public class AiPredictionService: IAiPredictionService
+    public class AiPredictionService : IAiPredictionService
     {
         private readonly HttpClient _httpClient;
 
@@ -18,42 +16,41 @@ namespace LearningManagementSystem.Application.Implementations
         {
             _httpClient = httpClient;
         }
+
         public async Task<PredictionResponse> PredictCourse(UserData userData)
         {
-            var url = "http://localhost:5000/predict";
             try
             {
-                var jsonPayload = JsonConvert.SerializeObject(new
+                var requestBody = new
                 {
                     age = userData.Age,
-                    isParent = userData.IsParent,
-                    childAge = userData.ChildAge 
-                },
-        new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Include 
-        });
+                    studytime = userData.StudyTime,
+                    absences = userData.Absences,
+                    failures = userData.Failures
+                };
+
+                string jsonPayload = JsonConvert.SerializeObject(requestBody);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync(url, content);
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadAsStringAsync();
-                    var prediction = JsonConvert.DeserializeObject<PredictionResponse>(result);
 
-                    return new PredictionResponse
-                    {
-                        predicted_course = prediction.predicted_course,
-                    };
-                }
-                else
+\                var response = await _httpClient.PostAsync("http://localhost:5000/predict", content);
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    throw new CustomException(500, "problem occured");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"API Error: {errorContent}");
                 }
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var predictionResult = JsonConvert.DeserializeObject<PredictionResponse>(responseContent);
+
+                return predictionResult;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                throw new CustomException(500,ex.Message);
-
+                throw new Exception("Error while connecting to AI Prediction API.", ex);
+            }
+            catch (JsonException ex)
+            {
+                throw new Exception("Error while parsing the AI Prediction API response.", ex);
             }
         }
     }

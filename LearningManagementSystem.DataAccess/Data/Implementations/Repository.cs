@@ -54,7 +54,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
             }
         }
 
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>> predicate = null, int skip = 0, int take = 0, params Func<IQueryable<T>, IQueryable<T>>[] includes)
+        public async Task<List<T>> GetAll(Expression<Func<T, bool>> predicate = null, bool AsnoTracking=false, int skip = 0, int take = 0, params Func<IQueryable<T>, IQueryable<T>>[] includes)
         {
             try
             {
@@ -87,6 +87,9 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
                 }
 
                 // Execute the query and return the list
+                if(AsnoTracking is true){
+               query = query.AsNoTracking();
+                };
                 return await query.ToListAsync();
             }
             catch (Exception ex)
