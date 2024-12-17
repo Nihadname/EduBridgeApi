@@ -13,5 +13,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<string> Create(RequstToRegisterCreateDto requstToRegisterCreateDto);
         Task<string> SendAcceptanceEmail(Guid id);
         Task<string> VerifyExistenceOfEmailUser(string token);
+        Task<IEnumerable<RequestToRegisterListItemDto>> GetAll();
             }
 }

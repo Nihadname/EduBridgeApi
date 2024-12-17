@@ -197,5 +197,11 @@ Provide advice for the registration.";
             
            
         }
+        public async Task<IEnumerable<RequestToRegisterListItemDto>> GetAll()
+        {
+            var allRequests=await _unitOfWork.RequstToRegisterRepository.GetAll();
+            var MappedallRequests=_mapper.Map<List<RequestToRegisterListItemDto>>(allRequests);
+            return (IEnumerable<RequestToRegisterListItemDto>)MappedallRequests;
+        }
     }
 }

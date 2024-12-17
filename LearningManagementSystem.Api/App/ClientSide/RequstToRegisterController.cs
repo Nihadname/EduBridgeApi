@@ -27,6 +27,11 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(new { message = await _requstToRegisterService.VerifyExistenceOfEmailUser(token) });
         }
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            return Ok(await _requstToRegisterService.GetAll()); 
+        }
 
     }
 }

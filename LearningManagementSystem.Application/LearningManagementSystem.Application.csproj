@@ -18,8 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\LearningManagementSystem.DataAccess\LearningManagementSystem.DataAccess.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Dtos\NewFolder\" />
-  </ItemGroup>
 
 </Project>

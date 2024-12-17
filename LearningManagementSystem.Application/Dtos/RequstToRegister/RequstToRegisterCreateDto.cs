@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.RequstToRegister
 {
-    public record RequstToRegisterCreateDto
+    public class RequstToRegisterCreateDto
     {
-        public string FullName { get; init; }
-        public int Age { get; init; }
-        public bool IsParent { get; init; }
-        public string PhoneNumber { get; init; }
-        public Guid ChoosenCourse { get; init; }
-        public string ChildName { get; init; }
-        public int? ChildAge { get; init; }
-        public string Email { get; init; }
-        public string AiResponse { get; init; }
+        public string FullName { get; set; }
+        public int Age { get; set; }
+        public bool IsParent { get; set; }
+        public string PhoneNumber { get; set; }
+        public Guid ChoosenCourse { get; set; }
+        public string ChildName { get; set; }
+        public int? ChildAge { get; set; }
+        public string Email { get; set; }
+        public string AiResponse { get; set; }
     }
 }
