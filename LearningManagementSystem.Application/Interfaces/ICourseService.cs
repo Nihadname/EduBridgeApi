@@ -13,5 +13,10 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<CourseReturnDto> Create(CourseCreateDto courseCreateDto);
         Task<CourseReturnDto> Update(Guid id, CourseUpdateDto courseUpdateDto);
         Task<CourseReturnDto> GetById(Guid id);
+        Task<string> DeleteFromUi(Guid id);
+        Task<string> Delete(Guid id);
+        Task<PaginationDto<CourseListItemDto>> GetAll(int pageNumber = 1,
+           int pageSize = 10,
+           string searchQuery = null);
     }
 }

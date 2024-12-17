@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Course;
+using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data.Implementations;
+using Microsoft.EntityFrameworkCore;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -71,6 +73,53 @@ namespace LearningManagementSystem.Application.Implementations
             var allCourses= await _unitOfWork.CourseRepository.GetAll(s=>s.IsDeleted == false);
             var MappedCourses=  _mapper.Map<List<CourseSelectItemDto>>(allCourses);
             return MappedCourses;
+        }
+        public async Task<string> DeleteFromUi(Guid id)
+        {
+          var existedCourse= await GetCourseById(id);
+            if (existedCourse.IsDeleted is true) throw new CustomException(400, "Course", "this already existed");
+            existedCourse.IsDeleted = true;
+            await _unitOfWork.Commit();
+            return "Deleted";
+        }
+        public async Task<string> Delete(Guid id)
+        {
+            var existedCourse = await GetCourseById(id);
+      await _unitOfWork.CourseRepository.Delete(existedCourse);
+            await _unitOfWork.Commit();
+            return "Deleted";
+        }
+        public async Task<PaginationDto<CourseListItemDto>> GetAll(int pageNumber = 1,
+           int pageSize = 10,
+           string searchQuery = null)
+        {
+            var courseQuery = await _unitOfWork.CourseRepository.GetQuery(s => s.IsDeleted == false);
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                courseQuery = courseQuery.Where(s => s.Name.Contains(searchQuery) || s.Description.Contains(searchQuery));
+            }
+            var totalCount = await courseQuery.CountAsync();
+
+            var paginatedQuery = (IEnumerable<Course>)await courseQuery.ToListAsync();
+
+            var mappedNotes = _mapper.Map<List<CourseListItemDto>>(paginatedQuery);
+
+            var paginationResult = await PaginationDto<CourseListItemDto>.Create((IEnumerable<CourseListItemDto>)mappedNotes, pageNumber, pageSize, totalCount);
+
+            return paginationResult;
+        }
+        private async Task<Course> GetCourseById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new CustomException(440, "Invalid GUID provided.");
+            }
+            var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s => s.Id == id && s.IsDeleted == false);
+            if (ExistedCourse is null)
+            {
+                throw new CustomException(404, "Course", "Not found");
+            }
+            return ExistedCourse;
         }
     }
 }

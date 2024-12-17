@@ -4,6 +4,7 @@ using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Report;
+using LearningManagementSystem.Application.Dtos.ReportOption;
 using LearningManagementSystem.Application.Dtos.RequstToRegister;
 using LearningManagementSystem.Application.Dtos.Teacher;
 using LearningManagementSystem.Core.Entities;
@@ -53,6 +54,9 @@ namespace LearningManagementSystem.Application.Profiles
                                .ForPath(s => s.optionInReportReturnDto.Id, map => map.MapFrom(d => d.ReportOption.Id))
                                .ForPath(s => s.optionInReportReturnDto.Name, map => map.MapFrom(d => d.ReportOption.Name));
             CreateMap<RequestToRegister,RequestToRegisterListItemDto>();
+            CreateMap<ReportOptionCreateDto, ReportOption>();
+            CreateMap<ReportOption, ReportOptionReturnDto>();
+            CreateMap<Course,CourseListItemDto>();
         }
     }
 }

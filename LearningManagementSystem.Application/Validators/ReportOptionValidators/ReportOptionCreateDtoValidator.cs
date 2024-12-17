@@ -10,5 +10,9 @@ namespace LearningManagementSystem.Application.Validators.ReportOptionValidators
 {
     public class ReportOptionCreateDtoValidator:AbstractValidator<ReportOptionCreateDto>
     {
+        public ReportOptionCreateDtoValidator()
+        {
+            RuleFor(s=>s.Name).NotEmpty().MaximumLength(300);  
+        }
     }
 }

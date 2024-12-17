@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LearningManagementSystem.Application.Dtos.ReportOption;
 
 namespace LearningManagementSystem.Application.Interfaces
 {
     public interface IReportOptionService
     {
+        Task<ReportOptionReturnDto> Create(ReportOptionCreateDto reportOptionCreateDto);
     }
 }

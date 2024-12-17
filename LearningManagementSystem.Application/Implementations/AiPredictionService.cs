@@ -32,7 +32,7 @@ namespace LearningManagementSystem.Application.Implementations
                 string jsonPayload = JsonConvert.SerializeObject(requestBody);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-\                var response = await _httpClient.PostAsync("http://localhost:5000/predict", content);
+                var response = await _httpClient.PostAsync("http://localhost:5000/predict", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

@@ -39,5 +39,25 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         {
             return Ok(await _courseService.GetById(id));
         }
+        [HttpDelete("Ui/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> DeleteFromUi(Guid id)
+        {
+            return Ok(await _courseService.DeleteFromUi(id));
+        }
+        [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+
+        public async Task<IActionResult>  Delete(Guid id)
+        {
+            return Ok(await _courseService.Delete(id));
+        }
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAll(int pageNumber = 1,
+           int pageSize = 10,
+           string searchQuery = null)
+        {
+            return Ok(await _courseService.GetAll(pageNumber, pageSize, searchQuery));  
+        }
     }
 }
