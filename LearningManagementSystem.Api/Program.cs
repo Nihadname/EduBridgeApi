@@ -6,6 +6,7 @@ using LearningManagementSystem.DataAccess.Data;
 using LearningManagementSystem.DataAccess.SeedDatas;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,19 +26,24 @@ builder.Services.AddControllers()
        {
            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
        });
+builder.Services.AddOpenApi();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 builder.Services.Register(config);
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("My API");
+      
+    });
 }
-app.UseSwagger();
-app.UseSwaggerUI();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseHangfireDashboard();
@@ -47,6 +53,7 @@ app.UseCors("AllowAllOrigins");
 app.UseMiddleware<CustomExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapOpenApi("/api-docs");
 
 app.MapControllers();
 using var scope = app.Services.CreateScope();
