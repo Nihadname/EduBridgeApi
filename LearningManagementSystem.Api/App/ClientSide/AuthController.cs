@@ -38,21 +38,21 @@ namespace LearningManagementSystem.Api.App.ClientSide
         [HttpPost("ResetPasswordSendEmail")]
         public async Task<IActionResult> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto)
         {
-          
+
             var result = await _authService.ResetPasswordSendEmail(resetPasswordEmailDto);
             return Ok(result);
         }
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword(string email, string token, ResetPasswordDto resetPasswordDto)
         {
-            return Ok(await _authService.ResetPassword(email, token, resetPasswordDto));    
+            return Ok(await _authService.ResetPassword(email, token, resetPasswordDto));
         }
         [HttpGet("CheckAuth")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
         public async Task<IActionResult> CheckAuth()
         {
-            return Ok(new {userName= await _authService.GetUserName() });
+            return Ok(new { userName = await _authService.GetUserName() });
         }
         [HttpGet("Profile")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -60,6 +60,20 @@ namespace LearningManagementSystem.Api.App.ClientSide
         public async Task<IActionResult> Profile()
         {
             return Ok(await _authService.Profile());
+        }
+        [HttpPatch("SendVerificationCode")]
+        public async Task<IActionResult> SendVerificationCode(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new CustomException(400, "Email is required.");
+            }
+            return Ok(await _authService.SendVerificationCode(email));  
+        }
+        [HttpPatch("VerifyCode")]
+        public async Task<IActionResult> VerifyCode(VerifyCodeDto verifyCodeDto)
+        {
+           return Ok(await _authService.VerifyCode(verifyCodeDto));
         }
     }
 }

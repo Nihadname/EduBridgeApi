@@ -22,5 +22,7 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<string> Delete(string id);
         Task<string> GetUserName();
         Task<UserGetDto> Profile();
+        Task<string> SendVerificationCode(string email);
+        Task<string> VerifyCode(VerifyCodeDto verifyCodeDto);
     }
 }

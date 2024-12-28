@@ -161,8 +161,45 @@ namespace LearningManagementSystem.Application.Implementations
 
                 throw new CustomException(400, errorMessages);
             }
+            await SendVerificationCode(appUser.Email);
             return appUser;
         }
+        public async Task<string> SendVerificationCode(string email)
+        {
+            if (string.IsNullOrEmpty(email)) throw new CustomException(400, "email", "email is null");
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user is null) throw new CustomException(400, "user", "user is null");
+            var verificationCode = new Random().Next(100000, 999999).ToString();
+            user.VerificationCode = verificationCode;
+            user.ExpiredDate = DateTime.UtcNow.AddMinutes(10);
+            user.IsEmailVerificationCodeValid = false;
+            await _userManager.UpdateAsync(user);
+            var body = $"<h1>Welcome!</h1><p>Thank you for joining us. We're excited to have you!, this is your verfication code {verificationCode} </p>";
+            BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                "nihadcoding@gmail.com",
+                user.Email,
+                "Verify Code",
+                body,
+                "smtp.gmail.com",
+                587,
+                true,
+                "nihadcoding@gmail.com",
+                "gulzclohfwjelppj"
+            ));
+            return "Verification code sent";
+        }
+        public async Task<string> VerifyCode(VerifyCodeDto verifyCodeDto)
+        {
+            var existedUser=await _userManager.FindByEmailAsync(verifyCodeDto.Email);
+            if (existedUser is null) throw new CustomException(404, "User", "User is null");
+            if (existedUser.VerificationCode != verifyCodeDto.Code || existedUser.ExpiredDate < DateTime.UtcNow) 
+                throw new CustomException(400,"Code","Invalid or expired verification code.");
+            existedUser.IsEmailVerificationCodeValid = true;
+            existedUser.VerificationCode = null;
+            existedUser.ExpiredDate = null;
+            await _userManager.UpdateAsync(existedUser);
+            return "Code verified successfully. You can now log in.";
+            }
         public async Task<AuthResponseDto> Login(LoginDto loginDto)
         {
             var User = await _userManager.FindByEmailAsync(loginDto.UserNameOrGmail);
@@ -218,6 +255,7 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "User", "You are reported too many times ,so account is locked now, we will contact with you");
             }
+            if (!User.IsEmailVerificationCodeValid) throw new CustomException(400, "User", "pls verify your account by getting code");
 
             IList<string> roles = await _userManager.GetRolesAsync(User);
             var Audience = _jwtSettings.Audience;

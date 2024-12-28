@@ -50,5 +50,8 @@ namespace LearningManagementSystem.Core.Entities
         public ICollection<Report> Reports { get; set; }
         public bool IsFirstTimeLogined { get; set; }
         public bool IsReportedHighly { get; set; }
+        public bool IsEmailVerificationCodeValid { get; set; }
+        public string VerificationCode { get; set; }
+        public DateTime? ExpiredDate { get; set; }
     }
 }
