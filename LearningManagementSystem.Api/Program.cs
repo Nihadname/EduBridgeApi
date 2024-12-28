@@ -1,11 +1,14 @@
+using CloudinaryDotNet;
 using Hangfire;
 using LearningManagementSystem.Api;
 using LearningManagementSystem.Api.Middlewares;
+using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data;
 using LearningManagementSystem.DataAccess.SeedDatas;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 
@@ -21,6 +24,15 @@ builder.Services.AddCors(options =>
 });
 // Add services to the container.
 var config=builder.Configuration;
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
+// Register Cloudinary instance
+builder.Services.AddSingleton(provider =>
+{
+    var config = provider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+    return new Cloudinary(new Account(config.CloudName, config.ApiKey, config.ApiSecret));
+});
 builder.Services.AddControllers()
        .AddJsonOptions(options =>
        {

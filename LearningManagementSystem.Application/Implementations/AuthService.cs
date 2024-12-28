@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using ZiggyCreatures.Caching.Fusion;
 
 
 namespace LearningManagementSystem.Application.Implementations
@@ -32,7 +33,8 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IHttpContextAccessor contextAccessor)
+        private readonly IFusionCache _cache;
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IHttpContextAccessor contextAccessor, IFusionCache cache)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -43,7 +45,7 @@ namespace LearningManagementSystem.Application.Implementations
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
-           
+            _cache = cache;
         }
 
         public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
@@ -420,12 +422,18 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "Id", "User ID cannot be null");
             }
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            var cacheKey = $"AppUser_{userId}";
+            var cachedNote = await _cache.GetOrSetAsync<AppUser>(cacheKey, async _ =>
             {
-                if (user is null) throw new CustomException(403, "this user doesnt exist");
-            }
-            return user;    
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    if (user is null) throw new CustomException(403, "this user doesnt exist");
+                }
+                return user;
+            });
+            
+            return cachedNote;    
 
         }
     }
