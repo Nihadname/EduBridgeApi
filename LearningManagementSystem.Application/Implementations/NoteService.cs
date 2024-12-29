@@ -33,7 +33,7 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new CustomException(400, "Id", "User ID cannot be null");
+                throw new CustomException(401, "Id", "User ID cannot be null");
             }
             var existedUser = await _userManager.Users
      .Include(u => u.Notes)

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {
-    public class PhotoOrVideoService: IPhotoOrVideoService
+    public class PhotoOrVideoService : IPhotoOrVideoService
     {
         private readonly Cloudinary _cloudinary;
 
@@ -26,41 +26,77 @@ namespace LearningManagementSystem.Application.Implementations
 
             _cloudinary = new Cloudinary(account);
         }
-        public async Task DeletePhotoAsync(string imageUrl)
+        public async Task<string> DeleteMediaAsync(string mediaUrl, ResourceType resourceType)
         {
-            string publicId = await ExtractPublicIdFromUrl(imageUrl);
-            var deletionParams = new DeletionParams(publicId) { ResourceType = ResourceType.Image };
+            string publicId = await ExtractPublicIdFromUrl(mediaUrl);
+            var deletionParams = new DeletionParams(publicId) { ResourceType = resourceType };
             var result = await _cloudinary.DestroyAsync(deletionParams);
             if (result.Result != "ok")
                 throw new CustomException(500, "Image", "Image delete error");
+            return "deleted";
         }
-        public async Task<string> UploadPhotoAsync(IFormFile file)
+        public async Task<string> UploadMediaAsync(IFormFile file, bool isVideo = false)
         {
             if (file == null || file.Length == 0)
             {
                 return null;
             }
 
-            var uploadResult = new ImageUploadResult();
+            object uploadResult;
+            if (isVideo)
+            {
+                uploadResult = new VideoUploadResult();
+            }
+            else
+            {
+                uploadResult = new ImageUploadResult();
+            }
 
             using (var stream = file.OpenReadStream())
             {
-                var uploadParams = new ImageUploadParams()
+                if (isVideo)
                 {
-                    File = new FileDescription(file.FileName, stream),
-                    Transformation = new Transformation().Width(500).Height(500).Crop("fill")
-                };
+                    var uploadParams = new VideoUploadParams()
+                    {
+                        File = new FileDescription(file.FileName, stream),
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill") // Adjust for videos
+                    };
 
-                uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                    uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                }
+                else
+                {
+                    var uploadParams = new ImageUploadParams()
+                    {
+                        File = new FileDescription(file.FileName, stream),
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill")
+                    };
+
+                    uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                }
+
+
             }
-
-            if (uploadResult.Error != null)
+            if (isVideo)
             {
-                throw new Exception(uploadResult.Error.Message);
+                var result = (VideoUploadResult)uploadResult;
+                if (result.Error != null)
+                {
+                    throw new CustomException(400, result.Error.Message);
+                }
+                return result.SecureUrl.ToString();
             }
-
-            return uploadResult.SecureUrl.ToString();
+            else
+            {
+                var result = (ImageUploadResult)uploadResult;
+                if (result.Error != null)
+                {
+                    throw new CustomException(400,result.Error.Message);
+                }
+                return result.SecureUrl.ToString();
+            }
         }
+    
         private async Task<string> ExtractPublicIdFromUrl(string url)
         {
             Uri uri = new Uri(url);

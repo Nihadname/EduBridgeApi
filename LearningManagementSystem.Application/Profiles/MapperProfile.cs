@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LearningManagementSystem.Application.Dtos.Address;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Note;
@@ -57,6 +58,9 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<ReportOptionCreateDto, ReportOption>();
             CreateMap<ReportOption, ReportOptionReturnDto>();
             CreateMap<Course,CourseListItemDto>();
+            CreateMap<AddressCreateDto, Address>();
+            CreateMap<AppUserInAdress, AppUser>();
+            CreateMap<Address, AddressReturnDto>();
         }
     }
 }

@@ -1,7 +1,9 @@
 using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Hangfire;
 using LearningManagementSystem.Api;
 using LearningManagementSystem.Api.Middlewares;
+using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data;
@@ -22,17 +24,34 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-// Add services to the container.
 var config=builder.Configuration;
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
 
-// Register Cloudinary instance
 builder.Services.AddSingleton(provider =>
 {
-    var config = provider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
-    return new Cloudinary(new Account(config.CloudName, config.ApiKey, config.ApiSecret));
+    var settings = provider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+
+    Console.WriteLine($"Initializing Cloudinary with: {settings.CloudName}, {settings.ApiKey}, {settings.ApiSecret}");
+
+    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+    var cloudinary = new Cloudinary(account);
+    try
+    {
+        var result = cloudinary.ListResources(new ListResourcesParams { MaxResults = 1 });
+        if (result.Error != null)
+        {
+            throw new CustomException(400,$"Cloudinary Account Error: {result.Error.Message}");
+        }
+    }
+    catch (Exception ex)
+    {
+        throw new CustomException(400, ex.Message);
+    }
+
+    return cloudinary;
 });
+
 builder.Services.AddControllers()
        .AddJsonOptions(options =>
        {
