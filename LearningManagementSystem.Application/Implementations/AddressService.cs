@@ -6,6 +6,7 @@ using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -42,12 +43,16 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(401, "Id", "User ID cannot be null");
             }
-            var existedUser=await _userManager.FindByIdAsync(userId);
-            if(existedUser is null) throw new CustomException(404, "User", "User  cannot be null or not  found");
+            var existedUser=await _userManager.Users
+    .Include(u => u.Address) 
+    .FirstOrDefaultAsync(u => u.Id == userId);
+            if (existedUser is null) throw new CustomException(404, "User", "User  cannot be null or not  found");
             addressCreateDto.AppUserId= userId;
-            var isExistedLocation=await IsLocationExist(addressCreateDto);
+            if (existedUser.Address is not null) throw new CustomException(400, "Address", "User already has an address. Update or delete the existing address instead.");
+            var isExistedLocation =await IsLocationExist(addressCreateDto);
             if(!isExistedLocation) throw new CustomException(404, "location", "location doesnt exist in the map");
             var mappedAddress = _mapper.Map<Address>(addressCreateDto);
+            mappedAddress.appUser= existedUser;
             await _unitOfWork.AddressRepository.Create(mappedAddress);
             await _unitOfWork.Commit();
             var mappedExistedAddress=_mapper.Map<AddressReturnDto>(mappedAddress);
