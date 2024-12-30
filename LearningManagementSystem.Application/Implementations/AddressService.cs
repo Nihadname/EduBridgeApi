@@ -96,9 +96,21 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return false;
         }
-        //public async Task<string> DeleteForUser(int? id)
-        //{
-
-        //}
+        public async Task<string> DeleteForUser(Guid id)
+        {
+            if (id == Guid.Empty) throw new CustomException(440, "Invalid GUID provided.");
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new CustomException(401, "Id", "User ID cannot be null");
+            }
+           var existedUser=await _userManager.FindByIdAsync(userId);
+            if(existedUser is null) throw new CustomException(404, "User", "User  cannot be null or not  found");
+            var existedAddress = await _unitOfWork.AddressRepository.GetEntity(s => s.Id == id & s.IsDeleted == false&s.AppUserId==existedUser.Id);
+            if (existedAddress is null) throw new CustomException(400, "Adress", "Address is null");
+            await _unitOfWork.AddressRepository.Delete(existedAddress);
+            await _unitOfWork.Commit();
+            return "Deleted By User";
+        }
     }
 }

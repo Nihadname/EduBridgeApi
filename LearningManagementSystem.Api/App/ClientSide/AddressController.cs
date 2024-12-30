@@ -26,5 +26,11 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _addressService.Create(addressCreateDto));
         }
+        [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            return Ok(await _addressService.DeleteForUser(id));
+        }
     }
 }
