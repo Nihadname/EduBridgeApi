@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Note;
+using LearningManagementSystem.Core.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,12 @@ namespace LearningManagementSystem.Application.Interfaces
 {
     public interface INoteService
     {
-        Task<NoteReturnDto> Create(NoteCreateDto noteCreateDto);
-        Task<PaginationDto<NoteListItemDto>> GetAll(int pageNumber = 1,
+        Task<Result<NoteReturnDto>> Create(NoteCreateDto noteCreateDto);
+        Task<Result<PaginationDto<NoteListItemDto>>> GetAll(int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null);
         Task<string> DeleteForUser(Guid Id);
-        Task<NoteReturnDto> UpdateForUser(Guid id, NoteUpdateDto noteUpdateDto);
-        Task<NoteReturnDto> GetById(Guid id);
+        Task<Result<NoteReturnDto>> UpdateForUser(Guid id, NoteUpdateDto noteUpdateDto);
+        Task<Result<NoteReturnDto>> GetById(Guid id);
     }
 }
