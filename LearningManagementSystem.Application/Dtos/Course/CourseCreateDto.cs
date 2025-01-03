@@ -9,7 +9,7 @@ namespace LearningManagementSystem.Application.Dtos.Course
 {
     public record CourseCreateDto
     {
-        public IFormFile formFile;
+        public IFormFile formFile { get; init; }
         public  string  Name { get; init; }
         public string Description { get; init; }
     }

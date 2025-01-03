@@ -22,13 +22,13 @@ namespace LearningManagementSystem.Application.Profiles
     public class MapperProfile:Profile
     {
         private readonly IHttpContextAccessor _contextAccessor;
-        private readonly IPhotoOrVideoService _photoOrVideoService;
+
 
        
 
-        public MapperProfile(IHttpContextAccessor contextAccessor, IPhotoOrVideoService photoOrVideoService)
+        public MapperProfile(IHttpContextAccessor contextAccessor)
         {
-            _photoOrVideoService = photoOrVideoService;
+            
 
             _contextAccessor = contextAccessor;
             var uriBuilder = new UriBuilder(_contextAccessor.HttpContext.Request.Scheme,
@@ -43,8 +43,8 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
             CreateMap<Course, CourseSelectItemDto>();
             CreateMap<Course, CourseReturnDto>();
-            CreateMap<CourseCreateDto, Course>()
-              .ForMember(s => s.ImageUrl, map => map.MapFrom(d => _photoOrVideoService.UploadMediaAsync(d.formFile, false)));
+            CreateMap<CourseCreateDto, Course>();
+              
             CreateMap<CourseUpdateDto, Course>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<Note, NoteReturnDto>();

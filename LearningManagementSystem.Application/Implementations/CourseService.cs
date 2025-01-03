@@ -13,10 +13,12 @@ namespace LearningManagementSystem.Application.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public CourseService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IPhotoOrVideoService _photoOrVideoService;
+        public CourseService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoOrVideoService photoOrVideoService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _photoOrVideoService = photoOrVideoService;
         }
         public async Task<CourseReturnDto> Create(CourseCreateDto courseCreateDto)
         {
@@ -24,7 +26,9 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "Name", "There is an already existed course");
             }
+            
            var MappedCourse=_mapper.Map<Course>(courseCreateDto);
+            MappedCourse.ImageUrl = await _photoOrVideoService.UploadMediaAsync(courseCreateDto.formFile, false);
             await _unitOfWork.CourseRepository.Create(MappedCourse);
             await _unitOfWork.Commit();
             var ResponseCourseDto=_mapper.Map<CourseReturnDto>(MappedCourse);

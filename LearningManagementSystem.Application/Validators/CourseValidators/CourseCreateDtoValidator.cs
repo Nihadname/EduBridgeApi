@@ -13,9 +13,7 @@ namespace LearningManagementSystem.Application.Validators.CourseValidators
     {
         public CourseCreateDtoValidator()
         {
-            RuleFor(x => x.formFile)
-               .NotNull().WithMessage("Bir resim dosyası zorunludur.")
-               .Must(BeAValidImage).WithMessage("Sadece resim dosyalarına (jpg, jpeg, png) izin verilir.");
+            
             RuleFor(s=>s.Name).MaximumLength(160).MinimumLength(2).NotEmpty();
             RuleFor(s=>s.Description).MaximumLength(250).MinimumLength(3).NotEmpty();
             RuleFor(s => s).Custom((c, context) =>
@@ -34,14 +32,6 @@ namespace LearningManagementSystem.Application.Validators.CourseValidators
 
             });
         }
-        private bool BeAValidImage(IFormFile file)
-        {
-            if (file == null)
-                return false;
-
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-            var extension = Path.GetExtension(file.FileName).ToLower();
-            return allowedExtensions.Contains(extension);
-        }
+       
     }
 }

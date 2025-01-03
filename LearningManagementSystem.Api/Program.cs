@@ -37,11 +37,11 @@ builder.Services.AddSingleton<IMapper>(provider =>
 
     using var scope = scopeFactory.CreateScope();
     var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
-    var photoOrVideoService = scope.ServiceProvider.GetRequiredService<IPhotoOrVideoService>();
+    //var photoOrVideoService = scope.ServiceProvider.GetRequiredService<IPhotoOrVideoService>();
 
     var mapperConfig = new MapperConfiguration(cfg =>
     {
-        cfg.AddProfile(new MapperProfile(httpContextAccessor, photoOrVideoService));
+        cfg.AddProfile(new MapperProfile(httpContextAccessor));
     });
 
     return mapperConfig.CreateMapper();

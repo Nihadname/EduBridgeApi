@@ -19,7 +19,7 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
             _courseService = courseService;
         }
         [HttpPost]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+     
 
         public async Task<IActionResult> Create([FromForm]CourseCreateDto courseCreateDto)
         {
