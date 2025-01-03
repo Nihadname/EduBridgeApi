@@ -52,14 +52,11 @@ namespace LearningManagementSystem.Api
                     return new BadRequestObjectResult(response);
                 };
             });
+
             services.AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()
             .AddValidatorsFromAssemblyContaining<RegisterValidator>();
-            services.AddHttpContextAccessor();
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddProfile(new MapperProfile(new HttpContextAccessor()));
-            });
+            
             services.AddFluentValidationRulesToSwagger();
             services.AddIdentity<AppUser, IdentityRole>(options =>
             {

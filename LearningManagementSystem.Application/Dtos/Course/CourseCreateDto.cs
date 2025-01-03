@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace LearningManagementSystem.Application.Dtos.Course
 {
     public record CourseCreateDto
     {
+        public IFormFile formFile;
         public  string  Name { get; init; }
         public string Description { get; init; }
     }

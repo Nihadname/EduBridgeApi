@@ -81,13 +81,17 @@ namespace LearningManagementSystem.Application.Implementations
 
             return Result<PaginationDto<NoteListItemDto>>.Success(paginationResult);
         }
-        public async Task<string> DeleteForUser(Guid Id)
+        public async Task<Result<string>> DeleteForUser(Guid Id)
         {
             var existedNoteResult = await GetUserWithUserAndIdChecks(Id);
+            if (!existedNoteResult.IsSuccess)
+            {
+                return Result<string>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message, (ErrorType)existedNoteResult.ErrorType);
+            }
             var existedNote = existedNoteResult.Data;
             await _unitOfWork.NoteRepository.Delete(existedNote);
             await _unitOfWork.Commit();
-            return "succesfully deleted";
+            return Result<string>.Success("deleted by user");
         }
         public async Task<Result<NoteReturnDto>> UpdateForUser(Guid id,NoteUpdateDto noteUpdateDto)
         {

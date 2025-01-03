@@ -7,11 +7,13 @@ namespace LearningManagementSystem.Api.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<CustomExceptionMiddleware> _logger;
+
         public CustomExceptionMiddleware(RequestDelegate next, ILogger<CustomExceptionMiddleware> logger)
         {
             _next = next;
             _logger = logger;
         }
+
         public async Task InvokeAsync(HttpContext httpContext)
         {
             try
@@ -21,12 +23,15 @@ namespace LearningManagementSystem.Api.Middlewares
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An exception occurred while processing the request.");
-
-               await HandleExceptionAsync(httpContext, ex);
+                await HandleExceptionAsync(httpContext, ex);
             }
         }
+
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (exception == null) throw new ArgumentNullException(nameof(exception));
+
             var response = context.Response;
             response.ContentType = "application/json";
 
@@ -47,7 +52,7 @@ namespace LearningManagementSystem.Api.Middlewares
                     response.StatusCode = StatusCodes.Status500InternalServerError;
                     errorResponse = new
                     {
-                        Message = "An unexpected error occurred.",
+                        Message = $"Exception message: {exception.Message}, Inner: {exception.InnerException?.Message ?? "None"}",
                         Errors = new Dictionary<string, string>()
                     };
                     break;

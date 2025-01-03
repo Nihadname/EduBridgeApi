@@ -8,6 +8,7 @@ using LearningManagementSystem.Application.Dtos.Report;
 using LearningManagementSystem.Application.Dtos.ReportOption;
 using LearningManagementSystem.Application.Dtos.RequstToRegister;
 using LearningManagementSystem.Application.Dtos.Teacher;
+using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -21,10 +22,13 @@ namespace LearningManagementSystem.Application.Profiles
     public class MapperProfile:Profile
     {
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IPhotoOrVideoService _photoOrVideoService;
 
-        public MapperProfile(IHttpContextAccessor contextAccessor)
+       
+
+        public MapperProfile(IHttpContextAccessor contextAccessor, IPhotoOrVideoService photoOrVideoService)
         {
-        
+            _photoOrVideoService = photoOrVideoService;
 
             _contextAccessor = contextAccessor;
             var uriBuilder = new UriBuilder(_contextAccessor.HttpContext.Request.Scheme,
@@ -37,13 +41,14 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<TeacherCreateDto, Teacher>();
             CreateMap<ParentCreateDto, Parent>();
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
-            CreateMap<Course,CourseSelectItemDto>();
+            CreateMap<Course, CourseSelectItemDto>();
             CreateMap<Course, CourseReturnDto>();
-            CreateMap<CourseCreateDto, Course>();
+            CreateMap<CourseCreateDto, Course>()
+              .ForMember(s => s.ImageUrl, map => map.MapFrom(d => _photoOrVideoService.UploadMediaAsync(d.formFile, false)));
             CreateMap<CourseUpdateDto, Course>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<Note, NoteReturnDto>();
-            CreateMap<Note,NoteListItemDto>();
+            CreateMap<Note, NoteListItemDto>();
             CreateMap<NoteCreateDto, Note>();
             CreateMap<NoteUpdateDto, Note>()
                             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
@@ -54,13 +59,14 @@ namespace LearningManagementSystem.Application.Profiles
                                .ForMember(s => s.userReportReturnDto, map => map.MapFrom(d => d.AppUser))
                                .ForPath(s => s.optionInReportReturnDto.Id, map => map.MapFrom(d => d.ReportOption.Id))
                                .ForPath(s => s.optionInReportReturnDto.Name, map => map.MapFrom(d => d.ReportOption.Name));
-            CreateMap<RequestToRegister,RequestToRegisterListItemDto>();
+            CreateMap<RequestToRegister, RequestToRegisterListItemDto>();
             CreateMap<ReportOptionCreateDto, ReportOption>();
             CreateMap<ReportOption, ReportOptionReturnDto>();
-            CreateMap<Course,CourseListItemDto>();
+            CreateMap<Course, CourseListItemDto>();
             CreateMap<AddressCreateDto, Address>();
             CreateMap<AppUserInAdress, AppUser>();
             CreateMap<Address, AddressReturnDto>();
+            
         }
     }
 }

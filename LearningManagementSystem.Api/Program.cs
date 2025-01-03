@@ -1,9 +1,12 @@
+using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Hangfire;
 using LearningManagementSystem.Api;
 using LearningManagementSystem.Api.Middlewares;
 using LearningManagementSystem.Application.Exceptions;
+using LearningManagementSystem.Application.Interfaces;
+using LearningManagementSystem.Application.Profiles;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.DataAccess.Data;
@@ -27,6 +30,22 @@ builder.Services.AddCors(options =>
 var config=builder.Configuration;
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IMapper>(provider =>
+{
+    var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
+
+    using var scope = scopeFactory.CreateScope();
+    var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+    var photoOrVideoService = scope.ServiceProvider.GetRequiredService<IPhotoOrVideoService>();
+
+    var mapperConfig = new MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile(new MapperProfile(httpContextAccessor, photoOrVideoService));
+    });
+
+    return mapperConfig.CreateMapper();
+});
 
 builder.Services.AddSingleton(provider =>
 {
