@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace LearningManagementSystem.DataAccess.Data.Implementations
 {
@@ -141,15 +142,37 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
             }
         }
 
-        public Task<IQueryable<T>> GetQuery(Expression<Func<T, bool>> predicate = null)
+        public Task<IQueryable<T>> GetQuery(
+      Expression<Func<T, bool>> predicate = null,
+      params Func<IQueryable<T>, IQueryable<T>>[] includes)
         {
             try
             {
-                return Task.FromResult(_table.AsQueryable());
+                // Start with the base query from the table
+                IQueryable<T> query = _table.AsQueryable();
+
+                // Apply the includes if provided
+                if (includes != null && includes.Length > 0)
+                {
+                    foreach (var include in includes)
+                    {
+                        query = include(query);
+                    }
+                }
+
+                // Apply the predicate if provided
+                if (predicate != null)
+                {
+                    query = query.Where(predicate);
+                }
+
+                // Return the query as a task
+                return Task.FromResult(query);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error in GetQuery: " + ex.Message, ex);
+                // Provide more detailed error information
+                throw new Exception($"Error in GetQuery for type {typeof(T).Name}: {ex.Message}", ex);
             }
         }
 

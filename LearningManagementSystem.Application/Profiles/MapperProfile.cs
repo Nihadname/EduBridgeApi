@@ -42,7 +42,7 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<ParentCreateDto, Parent>();
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
             CreateMap<Course, CourseSelectItemDto>();
-            CreateMap<Course, CourseReturnDto>();
+            CreateMap<Course, CourseCreateReturnDto>();
             CreateMap<CourseCreateDto, Course>();
               
             CreateMap<CourseUpdateDto, Course>()
@@ -66,7 +66,9 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<AddressCreateDto, Address>();
             CreateMap<AppUserInAdress, AppUser>();
             CreateMap<Address, AddressReturnDto>();
-            
+            CreateMap<Lesson,LessonInCourseReturnDto>();
+            CreateMap<Course, CourseReturnDto>()
+                .ForMember(s => s.Lessons, map => map.MapFrom(d => d.lessons));
         }
     }
 }

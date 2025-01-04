@@ -18,6 +18,8 @@ namespace LearningManagementSystem.Core.Repositories
         Task Update(T entity);
         Task Delete(T entity);
         Task<bool> isExists(Expression<Func<T, bool>> predicate = null);
-        Task<IQueryable<T>> GetQuery(Expression<Func<T, bool>> predicate = null);
+        Task<IQueryable<T>> GetQuery(
+       Expression<Func<T, bool>> predicate = null,
+       params Func<IQueryable<T>, IQueryable<T>>[] includes);
     }
 }

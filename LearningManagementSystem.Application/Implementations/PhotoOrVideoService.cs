@@ -59,7 +59,7 @@ namespace LearningManagementSystem.Application.Implementations
                     var uploadParams = new VideoUploadParams()
                     {
                         File = new FileDescription(file.FileName, stream),
-                        Transformation = new Transformation().Width(500).Height(500).Crop("fill") // Adjust for videos
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill").Quality("auto").FetchFormat("auto") // Adjust for videos
                     };
 
                     uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -69,7 +69,7 @@ namespace LearningManagementSystem.Application.Implementations
                     var uploadParams = new ImageUploadParams()
                     {
                         File = new FileDescription(file.FileName, stream),
-                        Transformation = new Transformation().Width(500).Height(500).Crop("fill")
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill").Quality("auto").FetchFormat("auto") // Adjust for videos
                     };
 
                     uploadResult = await _cloudinary.UploadAsync(uploadParams);

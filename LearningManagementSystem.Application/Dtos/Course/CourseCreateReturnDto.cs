@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Course
 {
-    public record CourseListItemDto
+    public record CourseCreateReturnDto
     {
-        public Guid Id  { get; set; }
+        public Guid Id { get; set; }
+        public string ImageUrl { get; set; }
         public string Name { get; init; }
         public string Description { get; init; }
-        public string ImageUrl  { get; init; }
     }
 }

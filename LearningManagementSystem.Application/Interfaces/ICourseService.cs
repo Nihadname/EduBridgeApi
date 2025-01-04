@@ -10,12 +10,12 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface ICourseService
     {
         Task<List<CourseSelectItemDto>> GetAllAsSelectItem();
-        Task<CourseReturnDto> Create(CourseCreateDto courseCreateDto);
-        Task<CourseReturnDto> Update(Guid id, CourseUpdateDto courseUpdateDto);
+        Task<CourseCreateReturnDto> Create(CourseCreateDto courseCreateDto);
+        Task<CourseCreateReturnDto> Update(Guid id, CourseUpdateDto courseUpdateDto);
         Task<CourseReturnDto> GetById(Guid id);
         Task<string> DeleteFromUi(Guid id);
         Task<string> Delete(Guid id);
-        Task<PaginationDto<CourseListItemDto>> GetAll(int pageNumber = 1,
+        Task<PaginationDto<CourseListItemDto>> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null);
     }

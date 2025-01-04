@@ -20,7 +20,7 @@ namespace LearningManagementSystem.Application.Implementations
             _mapper = mapper;
             _photoOrVideoService = photoOrVideoService;
         }
-        public async Task<CourseReturnDto> Create(CourseCreateDto courseCreateDto)
+        public async Task<CourseCreateReturnDto> Create(CourseCreateDto courseCreateDto)
         {
             if(await _unitOfWork.CourseRepository.isExists(s=>s.Name.ToLower() == courseCreateDto.Name.ToLower()))
             {
@@ -31,7 +31,7 @@ namespace LearningManagementSystem.Application.Implementations
             MappedCourse.ImageUrl = await _photoOrVideoService.UploadMediaAsync(courseCreateDto.formFile, false);
             await _unitOfWork.CourseRepository.Create(MappedCourse);
             await _unitOfWork.Commit();
-            var ResponseCourseDto=_mapper.Map<CourseReturnDto>(MappedCourse);
+            var ResponseCourseDto=_mapper.Map<CourseCreateReturnDto>(MappedCourse);
             return ResponseCourseDto;
         }
         public async  Task<CourseReturnDto> GetById(Guid id)
@@ -40,7 +40,10 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(440, "Invalid GUID provided.");
             }
-            var ExistedCourse=await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==id&& s.IsDeleted == false);
+            var ExistedCourse=await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==id&& s.IsDeleted == false, includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
+                 query => query
+            .Include(p => p.lessons)
+            });
             if (ExistedCourse is null)
             {
                 throw new CustomException(404, "Course", "Not found");
@@ -48,7 +51,7 @@ namespace LearningManagementSystem.Application.Implementations
             var MappedCourse = _mapper.Map<CourseReturnDto>(ExistedCourse);
             return MappedCourse;
         }
-        public async Task<CourseReturnDto> Update(Guid id,CourseUpdateDto courseUpdateDto)
+        public async Task<CourseCreateReturnDto> Update(Guid id,CourseUpdateDto courseUpdateDto)
         {
             if (id == Guid.Empty)
             {
@@ -69,7 +72,7 @@ namespace LearningManagementSystem.Application.Implementations
             _mapper.Map(courseUpdateDto, ExistedCourse);
             await _unitOfWork.CourseRepository.Update(ExistedCourse);
             await _unitOfWork.Commit();
-            var ResponseCourseDto = _mapper.Map<CourseReturnDto>(ExistedCourse);
+            var ResponseCourseDto = _mapper.Map<CourseCreateReturnDto>(ExistedCourse);
             return ResponseCourseDto;
         }
         public async Task<List<CourseSelectItemDto>> GetAllAsSelectItem()
@@ -93,14 +96,25 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return "Deleted";
         }
-        public async Task<PaginationDto<CourseListItemDto>> GetAll(int pageNumber = 1,
-           int pageSize = 10,
+        public async Task<PaginationDto<CourseListItemDto>> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
+           int pageSize = 10, 
            string searchQuery = null)
         {
-            var courseQuery = await _unitOfWork.CourseRepository.GetQuery(s => s.IsDeleted == false);
+            var courseQuery = await _unitOfWork.CourseRepository.GetQuery(s => s.IsDeleted == false, includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
+                 query => query
+            .Include(p => p.lessons)
+            });
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 courseQuery = courseQuery.Where(s => s.Name.Contains(searchQuery) || s.Description.Contains(searchQuery));
+            }
+            if(TeacherIds.Any())
+            {
+                foreach (var TeacherId in TeacherIds)
+                {
+                    if(!await _unitOfWork.TeacherRepository.isExists(s=>s.Id== TeacherId)) throw new CustomException(400, "TeacherId", "TeacherId is invalid");
+                    courseQuery = courseQuery.Where(s => s.lessons.Any(s => s.TeacherId == TeacherId));
+                }
             }
             var totalCount = await courseQuery.CountAsync();
 

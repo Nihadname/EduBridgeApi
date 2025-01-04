@@ -15,7 +15,7 @@
 		<PackageReference Include="CloudinaryDotNet" Version="1.27.1" />
 		<PackageReference Include="Hangfire.SqlServer" Version="1.8.17" />
 		<PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.1.0" />
-
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 		<PackageReference Include="Microsoft.AspNet.Cors" Version="5.3.0" />
 
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
@@ -28,7 +28,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-		<PackageReference Include="Scalar.AspNetCore" Version="1.2.64" />
+	
 
 	</ItemGroup>
 
