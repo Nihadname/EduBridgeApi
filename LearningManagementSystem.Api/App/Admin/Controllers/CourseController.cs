@@ -53,11 +53,11 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
             return Ok(await _courseService.Delete(id));
         }
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll(int pageNumber = 1,
+        public async Task<IActionResult> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null)
         {
-            return Ok(await _courseService.GetAll(pageNumber, pageSize, searchQuery));  
+            return Ok(await _courseService.GetAll(TeacherIds,pageNumber, pageSize, searchQuery));  
         }
     }
 }
