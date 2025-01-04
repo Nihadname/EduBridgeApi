@@ -4,6 +4,7 @@ using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
+using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,87 +21,89 @@ namespace LearningManagementSystem.Application.Implementations
             _mapper = mapper;
             _photoOrVideoService = photoOrVideoService;
         }
-        public async Task<CourseCreateReturnDto> Create(CourseCreateDto courseCreateDto)
+        public async Task<Result<CourseCreateOrUpdateReturnDto>> Create(CourseCreateDto courseCreateDto)
         {
             if(await _unitOfWork.CourseRepository.isExists(s=>s.Name.ToLower() == courseCreateDto.Name.ToLower()))
             {
-                throw new CustomException(400, "Name", "There is an already existed course");
+                return Result<CourseCreateOrUpdateReturnDto>.Failure("Name", "There is an already existed course",ErrorType.BusinessLogicError);
             }
             
            var MappedCourse=_mapper.Map<Course>(courseCreateDto);
             MappedCourse.ImageUrl = await _photoOrVideoService.UploadMediaAsync(courseCreateDto.formFile, false);
             await _unitOfWork.CourseRepository.Create(MappedCourse);
             await _unitOfWork.Commit();
-            var ResponseCourseDto=_mapper.Map<CourseCreateReturnDto>(MappedCourse);
-            return ResponseCourseDto;
+            var ResponseCourseDto=_mapper.Map<CourseCreateOrUpdateReturnDto>(MappedCourse);
+            return Result<CourseCreateOrUpdateReturnDto>.Success(ResponseCourseDto);
         }
-        public async  Task<CourseReturnDto> GetById(Guid id)
+        public async  Task<Result<CourseReturnDto>> GetById(Guid id)
         {
             if (id == Guid.Empty)
             {
-                throw new CustomException(440, "Invalid GUID provided.");
+               return Result<CourseReturnDto>.Failure(null, "Invalid GUID provided.",ErrorType.ValidationError);
             }
-            var ExistedCourse=await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==id&& s.IsDeleted == false, includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
+            var ExistedCourse=await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==id&& s.IsDeleted == false,true, includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
                  query => query
             .Include(p => p.lessons)
             });
             if (ExistedCourse is null)
             {
-                throw new CustomException(404, "Course", "Not found");
+                return Result<CourseReturnDto>.Failure("Course", "Not found", ErrorType.NotFoundError);
             }
             var MappedCourse = _mapper.Map<CourseReturnDto>(ExistedCourse);
-            return MappedCourse;
+            return Result<CourseReturnDto>.Success(MappedCourse);
         }
-        public async Task<CourseCreateReturnDto> Update(Guid id,CourseUpdateDto courseUpdateDto)
+        public async Task<Result<CourseCreateOrUpdateReturnDto>> Update(Guid id,CourseUpdateDto courseUpdateDto)
         {
             if (id == Guid.Empty)
             {
-                throw new CustomException(440, "Invalid GUID provided.");
+              return  Result<CourseCreateOrUpdateReturnDto>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
             }
             if (courseUpdateDto.Name != null)
             {
                 if (await _unitOfWork.CourseRepository.isExists(s => s.Name.ToLower() == courseUpdateDto.Name.ToLower()))
                 {
-                    throw new CustomException(400, "Name", "There is an already existed course");
+                 return   Result<CourseCreateOrUpdateReturnDto>.Failure("Name", "There is an already existed course", ErrorType.BusinessLogicError);
                 }
             }
             var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s =>s.Id == id);
             if(ExistedCourse == null)
             {
-                throw new CustomException(400, "Course doesnt exist");
+             return   Result<CourseCreateOrUpdateReturnDto>.Failure(null, "Course doesnt exist", ErrorType.NotFoundError);
             }
             _mapper.Map(courseUpdateDto, ExistedCourse);
             await _unitOfWork.CourseRepository.Update(ExistedCourse);
             await _unitOfWork.Commit();
-            var ResponseCourseDto = _mapper.Map<CourseCreateReturnDto>(ExistedCourse);
-            return ResponseCourseDto;
+            var ResponseCourseDto = _mapper.Map<CourseCreateOrUpdateReturnDto>(ExistedCourse);
+            return Result< CourseCreateOrUpdateReturnDto>.Success(ResponseCourseDto);
         }
         public async Task<List<CourseSelectItemDto>> GetAllAsSelectItem()
         {
-            var allCourses= await _unitOfWork.CourseRepository.GetAll(s=>s.IsDeleted == false);
+            var allCourses= await _unitOfWork.CourseRepository.GetAll(s=>s.IsDeleted == false, true);
             var MappedCourses=  _mapper.Map<List<CourseSelectItemDto>>(allCourses);
             return MappedCourses;
         }
-        public async Task<string> DeleteFromUi(Guid id)
+        public async Task<Result<string>> DeleteFromUi(Guid id)
         {
-          var existedCourse= await GetCourseById(id);
-            if (existedCourse.IsDeleted is true) throw new CustomException(400, "Course", "this already existed");
+            var existedCourseResult = await GetCourseById(id);
+            var existedCourse = existedCourseResult.Data;
+            if (existedCourse.IsDeleted is true) Result<string>.Failure("Course", "this already existed",ErrorType.BusinessLogicError);
             existedCourse.IsDeleted = true;
             await _unitOfWork.Commit();
-            return "Deleted";
+            return Result<string>.Success("Deleted");
         }
-        public async Task<string> Delete(Guid id)
+        public async Task<Result<string>> Delete(Guid id)
         {
-            var existedCourse = await GetCourseById(id);
+            var existedCourseResult = await GetCourseById(id);
+            var existedCourse=existedCourseResult.Data;
       await _unitOfWork.CourseRepository.Delete(existedCourse);
             await _unitOfWork.Commit();
-            return "Deleted";
+            return Result<string>.Success("Deleted");
         }
-        public async Task<PaginationDto<CourseListItemDto>> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
+        public async Task<Result<PaginationDto<CourseListItemDto>>> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
            int pageSize = 10, 
            string searchQuery = null)
         {
-            var courseQuery = await _unitOfWork.CourseRepository.GetQuery(s => s.IsDeleted == false, includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
+            var courseQuery = await _unitOfWork.CourseRepository.GetQuery(s => s.IsDeleted == false,true,true,  includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
                  query => query
             .Include(p => p.lessons)
             });
@@ -124,20 +127,20 @@ namespace LearningManagementSystem.Application.Implementations
 
             var paginationResult = await PaginationDto<CourseListItemDto>.Create((IEnumerable<CourseListItemDto>)mappedNotes, pageNumber, pageSize, totalCount);
 
-            return paginationResult;
+            return Result<PaginationDto<CourseListItemDto>>.Success(paginationResult);
         }
-        private async Task<Course> GetCourseById(Guid id)
+        private async Task<Result<Course>> GetCourseById(Guid id)
         {
             if (id == Guid.Empty)
             {
-                throw new CustomException(440, "Invalid GUID provided.");
+                return Result<Course>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
             }
-            var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s => s.Id == id && s.IsDeleted == false);
+            var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s => s.Id == id && s.IsDeleted == false,true);
             if (ExistedCourse is null)
             {
-                throw new CustomException(404, "Course", "Not found");
+                return Result<Course>.Failure("Course", "Not found", ErrorType.NotFoundError);
             }
-            return ExistedCourse;
+            return Result<Course>.Success(ExistedCourse);
         }
     }
 }

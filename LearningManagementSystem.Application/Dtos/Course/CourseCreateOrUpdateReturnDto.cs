@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Course
 {
-    public record CourseCreateReturnDto
+    public record CourseCreateOrUpdateReturnDto
     {
         public Guid Id { get; set; }
         public string ImageUrl { get; set; }

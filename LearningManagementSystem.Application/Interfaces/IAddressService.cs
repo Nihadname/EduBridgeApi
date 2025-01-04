@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Address;
+using LearningManagementSystem.Core.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace LearningManagementSystem.Application.Interfaces
 {
     public interface IAddressService
     {
-        Task<AddressReturnDto> Create(AddressCreateDto addressCreateDto);
+        Task<Result<AddressReturnDto>> Create(AddressCreateDto addressCreateDto);
         Task<string> DeleteForUser(Guid id);
     }
 }

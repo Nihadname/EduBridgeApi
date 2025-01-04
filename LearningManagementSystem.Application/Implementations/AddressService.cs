@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Address;
+using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
+using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -36,27 +38,28 @@ namespace LearningManagementSystem.Application.Implementations
             _configuration = configuration;
             _httpClient = httpClient;
         }
-        public async Task<AddressReturnDto> Create(AddressCreateDto addressCreateDto)
+        public async Task<Result<AddressReturnDto>> Create(AddressCreateDto addressCreateDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new CustomException(401, "Id", "User ID cannot be null");
+                return Result<AddressReturnDto>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
             var existedUser=await _userManager.Users
     .Include(u => u.Address) 
     .FirstOrDefaultAsync(u => u.Id == userId);
-            if (existedUser is null) throw new CustomException(404, "User", "User  cannot be null or not  found");
+            if (existedUser is null) return Result<AddressReturnDto>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
             addressCreateDto.AppUserId= userId;
-            if (existedUser.Address is not null) throw new CustomException(400, "Address", "User already has an address. Update or delete the existing address instead.");
+            if (existedUser.Address is not null)
+                return Result<AddressReturnDto>.Failure("Address", "User already has an address. Update or delete the existing address instead.", ErrorType.SystemError);
             var isExistedLocation =await IsLocationExist(addressCreateDto);
-            if(!isExistedLocation) throw new CustomException(404, "location", "location doesnt exist in the map");
+            if(!isExistedLocation) return Result<AddressReturnDto>.Failure("location", "location doesnt exist in the map", ErrorType.BusinessLogicError);
             var mappedAddress = _mapper.Map<Address>(addressCreateDto);
             mappedAddress.appUser= existedUser;
             await _unitOfWork.AddressRepository.Create(mappedAddress);
             await _unitOfWork.Commit();
             var mappedExistedAddress=_mapper.Map<AddressReturnDto>(mappedAddress);
-            return mappedExistedAddress;
+            return Result<AddressReturnDto>.Success(mappedExistedAddress);
         }
         private async Task<bool> IsLocationExist(AddressCreateDto addressCreateDto)
         {
@@ -96,21 +99,21 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return false;
         }
-        public async Task<string> DeleteForUser(Guid id)
+        public async Task<Result<string>> DeleteForUser(Guid id)
         {
-            if (id == Guid.Empty) throw new CustomException(440, "Invalid GUID provided.");
+            if (id == Guid.Empty) Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new CustomException(401, "Id", "User ID cannot be null");
+                Result<string>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
            var existedUser=await _userManager.FindByIdAsync(userId);
-            if(existedUser is null) throw new CustomException(404, "User", "User  cannot be null or not  found");
+            if(existedUser is null) return Result<string>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
             var existedAddress = await _unitOfWork.AddressRepository.GetEntity(s => s.Id == id & s.IsDeleted == false&s.AppUserId==existedUser.Id);
-            if (existedAddress is null) throw new CustomException(400, "Adress", "Address is null");
+            if (existedAddress is null) return Result<string>.Failure("Adress", "Address is null", ErrorType.NotFoundError);
             await _unitOfWork.AddressRepository.Delete(existedAddress);
             await _unitOfWork.Commit();
-            return "Deleted By User";
+            return Result<string>.Success("Deleted By User");
         }
     }
 }

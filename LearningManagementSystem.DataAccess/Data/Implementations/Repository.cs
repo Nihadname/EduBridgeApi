@@ -55,7 +55,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
             }
         }
 
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>> predicate = null, bool AsnoTracking=false, int skip = 0, int take = 0, params Func<IQueryable<T>, IQueryable<T>>[] includes)
+        public async Task<List<T>> GetAll(Expression<Func<T, bool>> predicate = null, bool AsnoTracking=false,bool AsSplitQuery=false, int skip = 0, int take = 0, params Func<IQueryable<T>, IQueryable<T>>[] includes)
         {
             try
             {
@@ -91,6 +91,10 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
                 if(AsnoTracking is true){
                query = query.AsNoTracking();
                 };
+                if (AsSplitQuery is true)
+                {
+                    query = query.AsSplitQuery();
+                }
                 return await query.ToListAsync();
             }
             catch (Exception ex)
@@ -100,7 +104,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
             }
         }
 
-        public async Task<T> GetEntity(Expression<Func<T, bool>> predicate = null, int skip = 0, int take = 0, params Func<IQueryable<T>, IQueryable<T>>[] includes)
+        public async Task<T> GetEntity(Expression<Func<T, bool>> predicate = null, bool AsnoTracking = false, bool AsSplitQuery = false, int skip = 0, int take = 0, params Func<IQueryable<T>, IQueryable<T>>[] includes)
         {
             try
             {
@@ -121,7 +125,6 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
                     query = query.Where(predicate);
                 }
 
-                // Apply skip and take after the filtering
                 if (skip > 0)
                 {
                     query = query.Skip(skip);
@@ -131,27 +134,30 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
                 {
                     query = query.Take(take);
                 }
-
-                // Return the first entity that matches
+                if (AsnoTracking is true)
+                {
+                    query = query.AsNoTracking();
+                };
+                if (AsSplitQuery is true)
+                {
+                    query = query.AsSplitQuery();
+                }
                 return await query.FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
-                // Log the full exception details for better debugging
                 throw new Exception("Error in GetEntity: " + ex.Message, ex);
             }
         }
 
         public Task<IQueryable<T>> GetQuery(
-      Expression<Func<T, bool>> predicate = null,
+      Expression<Func<T, bool>> predicate = null, bool AsnoTracking = false, bool AsSplitQuery = false,
       params Func<IQueryable<T>, IQueryable<T>>[] includes)
         {
             try
             {
-                // Start with the base query from the table
                 IQueryable<T> query = _table.AsQueryable();
 
-                // Apply the includes if provided
                 if (includes != null && includes.Length > 0)
                 {
                     foreach (var include in includes)
@@ -160,13 +166,18 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
                     }
                 }
 
-                // Apply the predicate if provided
                 if (predicate != null)
                 {
                     query = query.Where(predicate);
                 }
-
-                // Return the query as a task
+                if (AsnoTracking is true)
+                {
+                    query = query.AsNoTracking();
+                };
+                if (AsSplitQuery is true)
+                {
+                    query = query.AsSplitQuery();
+                }
                 return Task.FromResult(query);
             }
             catch (Exception ex)
