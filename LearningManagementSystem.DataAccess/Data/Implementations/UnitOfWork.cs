@@ -24,8 +24,8 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public INoteRepository NoteRepository { get; private set; } 
         public IReportRepository ReportRepository { get; private set; }
         public IReportOptionRepository ReportOptionRepository { get; private set; }
-
         public IAddressRepository AddressRepository { get; private set; }
+        public IFeeRepository FeeRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext applicationDbContext)
         {
@@ -39,6 +39,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
             ReportRepository = new ReportRepository(applicationDbContext);
             ReportOptionRepository = new ReportOptionRepository(applicationDbContext);
             AddressRepository = new AddressRepository(applicationDbContext);    
+            FeeRepository = new FeeRepository(applicationDbContext);
             _applicationDbContext = applicationDbContext;
 
         }
