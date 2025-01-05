@@ -15,6 +15,7 @@ namespace LearningManagementSystem.Core.Entities
         public Guid? ParentId { get; set; }
         public Parent Parent { get; set; }
         public ICollection<LessonStudent> lessonStudents { get; set; }
+        public ICollection<Fee> fees { get; set; }
 
     }
 }

@@ -11,6 +11,6 @@ namespace LearningManagementSystem.Application.Interfaces
     public interface IAddressService
     {
         Task<Result<AddressReturnDto>> Create(AddressCreateDto addressCreateDto);
-        Task<string> DeleteForUser(Guid id);
+        Task<Result<string>> DeleteForUser(Guid id);
     }
 }
