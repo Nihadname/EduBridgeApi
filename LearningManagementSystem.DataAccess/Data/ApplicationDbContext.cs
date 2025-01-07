@@ -34,6 +34,7 @@ namespace LearningManagementSystem.DataAccess.Data
         public DbSet<Fee> fees { get; set; }
         public DbSet<Report> reports { get; set; }
         public DbSet<ReportOption> reportOptions { get; set; }
+        public DbSet<CourseStudent> courseStudents { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

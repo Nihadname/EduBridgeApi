@@ -4,6 +4,7 @@ using LearningManagementSystem.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearningManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250107212546_NewPropertiesToCourse")]
+    partial class NewPropertiesToCourse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -247,42 +250,6 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Courses");
-                });
-
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.CourseStudent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CreatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("EnrolledDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("courseStudents");
                 });
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Fee", b =>
@@ -1172,25 +1139,6 @@ namespace LearningManagementSystem.DataAccess.Migrations
                     b.Navigation("appUser");
                 });
 
-            modelBuilder.Entity("LearningManagementSystem.Core.Entities.CourseStudent", b =>
-                {
-                    b.HasOne("LearningManagementSystem.Core.Entities.Course", "Course")
-                        .WithMany("courseStudents")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LearningManagementSystem.Core.Entities.Student", "Student")
-                        .WithMany("courseStudents")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Fee", b =>
                 {
                     b.HasOne("LearningManagementSystem.Core.Entities.Student", "Student")
@@ -1453,8 +1401,6 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Course", b =>
                 {
-                    b.Navigation("courseStudents");
-
                     b.Navigation("lessons");
                 });
 
@@ -1491,8 +1437,6 @@ namespace LearningManagementSystem.DataAccess.Migrations
 
             modelBuilder.Entity("LearningManagementSystem.Core.Entities.Student", b =>
                 {
-                    b.Navigation("courseStudents");
-
                     b.Navigation("fees");
 
                     b.Navigation("lessonStudents");

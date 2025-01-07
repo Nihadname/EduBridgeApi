@@ -6,11 +6,6 @@ using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -45,7 +40,10 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 if (DateTime.Now.Day is not 1) throw new CustomException(400, "Day", "it is not first day ");
                 var allEnroledStudents=await _unitOfWork.StudentRepository.GetAll(s=>s.IsEnrolled==true&&!s.IsDeleted,true);
-
+             //foreach(var student in allEnroledStudents)
+             //   {
+             //      student.lessonStudents.
+             //   }
 
             }
             await Task.Delay(TimeSpan.FromDays(1), stoppingToken);

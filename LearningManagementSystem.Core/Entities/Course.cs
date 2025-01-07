@@ -20,6 +20,7 @@ namespace LearningManagementSystem.Core.Entities
         public decimal Price { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public ICollection<CourseStudent> courseStudents { get; set; }
     }
     public enum DifficultyLevel
     {
