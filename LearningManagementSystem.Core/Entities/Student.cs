@@ -16,6 +16,7 @@ namespace LearningManagementSystem.Core.Entities
         public Parent Parent { get; set; }
         public ICollection<LessonStudent> lessonStudents { get; set; }
         public ICollection<Fee> fees { get; set; }
+        public bool IsEnrolled { get; set; }
 
     }
 }

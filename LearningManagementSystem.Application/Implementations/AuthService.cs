@@ -56,6 +56,7 @@ namespace LearningManagementSystem.Application.Implementations
            var Student = new Student();
             Student.AvarageScore= null;
             Student.AppUserId=appUser.Id;
+            Student.IsEnrolled=false;
             await _unitOfWork.StudentRepository.Create(Student);
            await _unitOfWork.Commit();
             var ExistedRequestRegister = await _unitOfWork.RequstToRegisterRepository.GetEntity(s => s.Email == appUser.Email);

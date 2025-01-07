@@ -31,6 +31,9 @@ namespace LearningManagementSystem.DataAccess.Data
         public DbSet<QuizQuestion > quizQuestions { get; set; }
         public DbSet<QuizResult> quizResults { get; set; }
         public DbSet<RequestToRegister> requestToRegister { get; set; }
+        public DbSet<Fee> fees { get; set; }
+        public DbSet<Report> reports { get; set; }
+        public DbSet<ReportOption> reportOptions { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

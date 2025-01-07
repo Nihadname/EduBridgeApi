@@ -2,6 +2,7 @@
 using LearningManagementSystem.Application.Dtos.Address;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Course;
+using LearningManagementSystem.Application.Dtos.Fee;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Report;
@@ -69,6 +70,7 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<Lesson,LessonInCourseReturnDto>();
             CreateMap<Course, CourseReturnDto>()
                 .ForMember(s => s.Lessons, map => map.MapFrom(d => d.lessons));
+            CreateMap<FeeCreateDto, Fee>();
         }
     }
 }

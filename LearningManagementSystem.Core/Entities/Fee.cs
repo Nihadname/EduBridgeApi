@@ -1,6 +1,7 @@
 ﻿using LearningManagementSystem.Core.Entities.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace LearningManagementSystem.Core.Entities
     {
         public decimal Amount { get; set; }
         public DateTime DueDate { get; set; }
-        public DateTime PaidDate { get; set; }
+        public DateTime? PaidDate { get; set; }
         public PaymentStatus PaymentStatus { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public decimal? DiscountPercentage { get; set; }

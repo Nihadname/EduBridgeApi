@@ -47,6 +47,10 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         {
             return await _applicationDbContext.Database.BeginTransactionAsync();
         }
+        public async Task RollbackTransactionAsync()
+        {
+             await _applicationDbContext.Database.RollbackTransactionAsync();
+        }
 
         public async Task Commit()
         {

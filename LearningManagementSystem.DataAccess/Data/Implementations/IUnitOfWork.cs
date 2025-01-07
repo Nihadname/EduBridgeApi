@@ -15,6 +15,7 @@ namespace LearningManagementSystem.DataAccess.Data.Implementations
         public ITeacherRepository TeacherRepository { get; }
         public IParentRepository  ParentRepository { get; }
         public Task Commit();
+        Task RollbackTransactionAsync();
        public Task<IDbContextTransaction> BeginTransactionAsync();
         public IRequstToRegisterRepository RequstToRegisterRepository { get; }
         public ICourseRepository courseRepository   { get; }

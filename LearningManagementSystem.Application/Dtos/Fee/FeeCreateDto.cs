@@ -11,8 +11,9 @@ namespace LearningManagementSystem.Application.Dtos.Fee
     {
         public decimal Amount { get; set; }
         public DateTime DueDate { get; set; }
-        public DateTime PaidDate { get; set; }
         public PaymentStatus PaymentStatus { get; set; }
+        public decimal? DiscountPercentage { get; set; }
+        public decimal? DiscountedPrice { get; set; }
         public Guid StudentId { get; set; }
     }
 }
