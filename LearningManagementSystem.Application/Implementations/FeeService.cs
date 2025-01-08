@@ -1,15 +1,17 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet;
 using LearningManagementSystem.Application.Dtos.Fee;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data.Implementations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
 namespace LearningManagementSystem.Application.Implementations
 {
-    public class FeeService : BackgroundService, IFeeService
+    public class FeeService :  IFeeService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -34,19 +36,23 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return Result<string>.Success("fee created for student named");
         }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+       public async Task CreateFeeToAllStudents()
         {
-            while (!stoppingToken.IsCancellationRequested)
+            var allStudents = await _unitOfWork.StudentRepository.GetAll(s => s.IsEnrolled==true&&!s.IsDeleted,true, includes: new Func<IQueryable<Student>, IQueryable<Student>>[]
             {
-                if (DateTime.Now.Day is not 1) throw new CustomException(400, "Day", "it is not first day ");
-                var allEnroledStudents=await _unitOfWork.StudentRepository.GetAll(s=>s.IsEnrolled==true&&!s.IsDeleted,true);
-             //foreach(var student in allEnroledStudents)
-             //   {
-             //      student.lessonStudents.
-             //   }
-
+                query => query.Include(s=>s.courseStudents).ThenInclude(s=>s.Course)
+            });
+           
+            foreach (var student in allStudents)
+            {
+                decimal amount = student.courseStudents.Where(x => x.Course != null).Select(x => x.Course.Price).Sum();
+                FeeCreateDto feeCreateDto = new()
+                {
+                    Amount = amount,
+                    StudentId=student.Id
+                };
+                await CreateFeeAndAssignToStudent(feeCreateDto);
             }
-            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }
     }
 }

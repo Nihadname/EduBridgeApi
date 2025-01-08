@@ -1,6 +1,7 @@
 ﻿using LearningManagementSystem.Api.App.ClientSide;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Interfaces;
+using LearningManagementSystem.Core.Entities.Common;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -19,13 +20,12 @@ public class NoteControllerTests
     public async Task Create_ShouldReturnOkResult_WhenNoteIsCreated()
     {
         // Arrange
-        var noteCreateDto = new NoteCreateDto { Title = "Test Note", Description = "Test Description" };
-        var noteReturnDto = new NoteReturnDto { Title = "Test Note", Description = "Test Description" };
-
-        _noteServiceMock
+      var noteCreateDto = new NoteCreateDto { Title = "Test Note", Description = "Test Description" };
+      var noteGet=  new NoteReturnDto { Title = "Test Note", Description = "Test Description" };
+      var noteReturnDto = Result<NoteReturnDto>.Success(noteGet);
+       _noteServiceMock
             .Setup(service => service.Create(noteCreateDto))
             .ReturnsAsync(noteReturnDto);
-
         // Act
         var result = await _controller.Create(noteCreateDto);
 
