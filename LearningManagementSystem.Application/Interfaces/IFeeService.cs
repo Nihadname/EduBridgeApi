@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Interfaces
 {
-    internal interface IFeeService
+    public interface IFeeService
     {
         Task<Result<string>> CreateFeeAndAssignToStudent(FeeCreateDto feeCreateDto);
-        Task CreateFeeToAllStudents();
+        Task CreateFeeToAllStudents(CancellationToken stoppingToken);
     }
 }

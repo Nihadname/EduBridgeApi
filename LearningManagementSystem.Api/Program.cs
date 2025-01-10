@@ -5,6 +5,7 @@ using Hangfire;
 using LearningManagementSystem.Api;
 using LearningManagementSystem.Api.Middlewares;
 using LearningManagementSystem.Application.Exceptions;
+using LearningManagementSystem.Application.Implementations;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Profiles;
 using LearningManagementSystem.Application.Settings;
@@ -32,6 +33,7 @@ var config=builder.Configuration;
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSingleton<IMapper>(provider =>
 {
     var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
@@ -84,6 +86,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 builder.Services.Register(config);
+builder.Services.AddHostedService<FeeProcessing>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

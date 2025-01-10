@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
-using LearningManagementSystem.Application.BackgroundServices;
+using LearningManagementSystem.Application.Implementations;
+using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Profiles;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Application.Validators.AuthValidators;
@@ -53,7 +54,7 @@ namespace LearningManagementSystem.Api
                     return new BadRequestObjectResult(response);
                 };
             });
-            services.AddHostedService<FeeProcessingService>();
+          
             services.AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()
             .AddValidatorsFromAssemblyContaining<RegisterValidator>();
@@ -124,8 +125,9 @@ namespace LearningManagementSystem.Api
             services.AddRepositories( AppDomain.CurrentDomain.GetAssemblies()
     .Where(a => a.FullName.Contains("LearningManagementSystem.Core") || a.FullName.Contains("LearningManagementSystem.DataAccess"))
     .ToList());
-  
+
             services.RegisterServices();
+           
             services.AddMemoryCache();
 
             services.AddFusionCache()

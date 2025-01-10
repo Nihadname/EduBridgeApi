@@ -32,10 +32,11 @@ namespace LearningManagementSystem.Application.Profiles
             
 
             _contextAccessor = contextAccessor;
-            var uriBuilder = new UriBuilder(_contextAccessor.HttpContext.Request.Scheme,
-                        _contextAccessor.HttpContext.Request.Host.Host,
-                        _contextAccessor.HttpContext.Request.Host.Port.Value);
-            var url = uriBuilder.Uri.AbsoluteUri;
+            var url = _contextAccessor.HttpContext?.Request.Host.HasValue ?? false
+      ? new UriBuilder(_contextAccessor.HttpContext.Request.Scheme,
+                       _contextAccessor.HttpContext.Request.Host.Host,
+                       _contextAccessor.HttpContext.Request.Host.Port ?? 80).Uri.AbsoluteUri
+      : "https://defaulturl.com/";
             CreateMap<AppUser, UserGetDto>()
                .ForMember(s => s.Image, map => map.MapFrom(d => url + "img/" + d.Image))
              .ForMember(s => s.PhoneNumber, map => map.MapFrom(d => d.PhoneNumber));
@@ -43,9 +44,13 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<ParentCreateDto, Parent>();
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
             CreateMap<Course, CourseSelectItemDto>();
-            CreateMap<Course, CourseCreateOrUpdateReturnDto>();
+            CreateMap<Course, CourseCreateOrUpdateReturnDto>()
+                .ForMember(dest => dest.difficultyLevel, opt => opt.MapFrom(src => Enum.GetName(typeof(DifficultyLevel), src.difficultyLevel)))
+                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => Enum.GetName(typeof(Language), src.Language)));
             CreateMap<CourseCreateDto, Course>();
-              
+                 
+
+
             CreateMap<CourseUpdateDto, Course>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<Note, NoteReturnDto>();

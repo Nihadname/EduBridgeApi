@@ -27,7 +27,7 @@ namespace LearningManagementSystem.Application.Implementations
             var lastFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(f => f.StudentId == feeCreateDto.StudentId && !f.IsDeleted);
             feeCreateDto.DueDate = lastFee != null ? lastFee.DueDate.AddMonths(1) : DateTime.Now.AddMonths(1);
             feeCreateDto.PaymentStatus=PaymentStatus.Pending;
-            if(feeCreateDto.DiscountPercentage is not null || feeCreateDto.DiscountPercentage.Value > 0)
+            if(feeCreateDto.DiscountPercentage is not null && feeCreateDto.DiscountPercentage > 0)
             {
                 feeCreateDto.DiscountedPrice= feeCreateDto.Amount - (feeCreateDto.Amount * feeCreateDto.DiscountPercentage.Value) / 100;
             }
@@ -36,22 +36,25 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return Result<string>.Success("fee created for student named");
         }
-       public async Task CreateFeeToAllStudents()
+       public async Task CreateFeeToAllStudents(CancellationToken stoppingToken)
         {
-            var allStudents = await _unitOfWork.StudentRepository.GetAll(s => s.IsEnrolled==true&&!s.IsDeleted,true, includes: new Func<IQueryable<Student>, IQueryable<Student>>[]
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var allStudents = await _unitOfWork.StudentRepository.GetAll(s => s.IsEnrolled == true && !s.IsDeleted, true, includes: new Func<IQueryable<Student>, IQueryable<Student>>[]
             {
                 query => query.Include(s=>s.courseStudents).ThenInclude(s=>s.Course)
             });
-           
-            foreach (var student in allStudents)
-            {
-                decimal amount = student.courseStudents.Where(x => x.Course != null).Select(x => x.Course.Price).Sum();
-                FeeCreateDto feeCreateDto = new()
+
+                foreach (var student in allStudents)
                 {
-                    Amount = amount,
-                    StudentId=student.Id
-                };
-                await CreateFeeAndAssignToStudent(feeCreateDto);
+                    decimal amount = student.courseStudents.Where(x => x.Course != null).Select(x => x.Course.Price).Sum();
+                    FeeCreateDto feeCreateDto = new()
+                    {
+                        Amount = amount,
+                        StudentId = student.Id
+                    };
+                    await CreateFeeAndAssignToStudent(feeCreateDto);
+                }
             }
         }
     }
