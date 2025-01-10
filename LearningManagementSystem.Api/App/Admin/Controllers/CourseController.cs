@@ -13,7 +13,6 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
-
         public CourseController(ICourseService courseService)
         {
             _courseService = courseService;

@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-
+using Stripe;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,7 +56,7 @@ builder.Services.AddSingleton(provider =>
 
     Console.WriteLine($"Initializing Cloudinary with: {settings.CloudName}, {settings.ApiKey}, {settings.ApiSecret}");
 
-    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+    var account = new CloudinaryDotNet.Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
     var cloudinary = new Cloudinary(account);
     try
     {
@@ -87,6 +87,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 builder.Services.Register(config);
 builder.Services.AddHostedService<FeeProcessing>();
+var stripeSettings = builder.Configuration.GetSection("Stripe");
+StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

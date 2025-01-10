@@ -18,6 +18,7 @@ namespace LearningManagementSystem.Core.Entities
         public decimal? DiscountPercentage { get; set; }
         public decimal? DiscountedPrice { get; set; }
        public string Description { get; set; }
+        public string PaymentReference { get; set; }
         public Guid StudentId { get; set; }
         public Student Student { get; set; }
     }

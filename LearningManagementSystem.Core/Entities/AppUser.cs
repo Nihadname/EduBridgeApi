@@ -53,5 +53,6 @@ namespace LearningManagementSystem.Core.Entities
         public bool IsEmailVerificationCodeValid { get; set; }
         public string VerificationCode { get; set; }
         public DateTime? ExpiredDate { get; set; }
+        public string CustomerId { get; set; }
     }
 }

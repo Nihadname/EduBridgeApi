@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Stripe;
 using System.Security.Claims;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -51,9 +52,17 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
         {
             var appUser = await CreateUser(registerDto);
-
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
-           var Student = new Student();
+            var customerOptions = new CustomerCreateOptions
+            {
+                Email = appUser.Email,
+                Name = appUser.UserName
+            };
+            var service = new CustomerService();
+            var stripeCustomer = await service.CreateAsync(customerOptions);
+            appUser.CustomerId=stripeCustomer.Id;
+            await _userManager.UpdateAsync(appUser);
+            var Student = new Student();
             Student.AvarageScore= null;
             Student.AppUserId=appUser.Id;
             Student.IsEnrolled=false;
@@ -205,10 +214,13 @@ namespace LearningManagementSystem.Application.Implementations
             }
         public async Task<AuthResponseDto> Login(LoginDto loginDto)
         {
-            var User = await _userManager.FindByEmailAsync(loginDto.UserNameOrGmail);
+            var User = await _userManager.Users.Include(s=>s.Student).
+                FirstOrDefaultAsync(s=>s.Email.ToLower()==loginDto.UserNameOrGmail.ToLower());
             if (User == null)
             {
-                User = await _userManager.FindByNameAsync(loginDto.UserNameOrGmail);
+                User = await _userManager.Users
+                    .Include(s => s.Student)
+                    .FirstOrDefaultAsync(s => s.UserName.ToLower() == loginDto.UserNameOrGmail.ToLower());
                 if (User == null)
                 {
                     throw new CustomException(400, "UserNameOrGmail", "userName or email is wrong\"");
@@ -254,13 +266,26 @@ namespace LearningManagementSystem.Application.Implementations
                     throw new CustomException(403, "UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}");
                 }
             }
+            IList<string> roles = await _userManager.GetRolesAsync(User);
+
+            if (roles.Contains(RolesEnum.Student.ToString()))
+            {
+                var latestFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(
+                    s => s.StudentId == User.Student.Id && !s.IsDeleted
+                );
+
+                if (latestFee is not null && latestFee.PaymentStatus != PaymentStatus.Paid)
+                {
+                    throw new CustomException(400, "PaymentRequired", "User must pay their fee for this month to log in.");
+                }
+            }
             if (User.IsReportedHighly)
             {
                 throw new CustomException(400, "User", "You are reported too many times ,so account is locked now, we will contact with you");
             }
             if (!User.IsEmailVerificationCodeValid) throw new CustomException(400, "User", "pls verify your account by getting code");
 
-            IList<string> roles = await _userManager.GetRolesAsync(User);
+            
             var Audience = _jwtSettings.Audience;
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
