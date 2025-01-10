@@ -20,7 +20,7 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         [HttpPost]
      
 
-        public async Task<IActionResult> Create([FromForm]CourseCreateDto courseCreateDto)
+        public async Task<IActionResult> Create( CourseCreateDto courseCreateDto)
         {
             return Ok(await _courseService.Create(courseCreateDto));
         }

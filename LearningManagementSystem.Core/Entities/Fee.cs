@@ -21,6 +21,8 @@ namespace LearningManagementSystem.Core.Entities
         public string PaymentReference { get; set; }
         public Guid StudentId { get; set; }
         public Student Student { get; set; }
+        public string ProvementImageUrl { get; set; }
+        public bool IsBankTransferAccepted { get; set; }
     }
     public enum PaymentStatus
     {

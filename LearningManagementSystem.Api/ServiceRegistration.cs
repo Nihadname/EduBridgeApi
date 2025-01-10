@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
@@ -87,6 +88,17 @@ namespace LearningManagementSystem.Api
         }
     });
             });
+           services.AddSwaggerGen(c =>
+            {
+                c.MapType<TimeSpan>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+                {
+                    Type = "string",
+                    Example = new Microsoft.OpenApi.Any.OpenApiString("00:00:00") // Default example for TimeSpan
+                });
+
+                // Other Swagger configuration (e.g., c.SwaggerDoc)
+            });
+
             services.AddIdentity<AppUser, IdentityRole>(options =>
             {
                 options.Password.RequiredLength = 8;

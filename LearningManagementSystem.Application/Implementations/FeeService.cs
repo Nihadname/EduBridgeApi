@@ -1,13 +1,18 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
+using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Fee;
+using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data.Implementations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using System.Security.Claims;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -15,10 +20,16 @@ namespace LearningManagementSystem.Application.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public FeeService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IPhotoOrVideoService _photoOrVideoService;
+        public FeeService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor, IPhotoOrVideoService photoOrVideoService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
+            _photoOrVideoService = photoOrVideoService;
         }
         public async Task<Result<string>> CreateFeeAndAssignToStudent(FeeCreateDto feeCreateDto)
         {
@@ -56,6 +67,32 @@ namespace LearningManagementSystem.Application.Implementations
                     await CreateFeeAndAssignToStudent(feeCreateDto);
                 }
             }
+        }
+       public async Task<Result<string>> UploadImageOfBankTransfer(FeeImageUploadDto feeImageUploadDto ) {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Result<string>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+            }
+            var existedUser = await _userManager.Users
+     .Include(u => u.Student)
+       .FirstOrDefaultAsync(u => u.Id == userId);
+            if (existedUser == null)
+            {
+                return Result<string>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
+            }
+            var existedFee=await _unitOfWork.FeeRepository.GetEntity(s=>s.Id==feeImageUploadDto.Id&&s.StudentId==existedUser.Student.Id&&!s.IsDeleted);
+            if (existedFee == null)
+            {
+                return Result<string>.Failure("Fee", "Fee  cannot be null or not  found", ErrorType.NotFoundError);
+            }
+            if (existedFee.PaymentStatus == PaymentStatus.Paid)
+            {
+                return Result<string>.Failure("Fee", "Fee  already paid", ErrorType.BusinessLogicError);
+            }
+            existedFee.PaymentMethod=PaymentMethod.BankTransfer;
+            existedFee.ProvementImageUrl= await _photoOrVideoService.UploadMediaAsync(feeImageUploadDto.image, false);
+          return  Result<string>.Success("yout request is accpeted , now our admins will check your banktransfer image");
         }
     }
 }

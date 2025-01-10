@@ -44,9 +44,8 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<ParentCreateDto, Parent>();
             CreateMap<RequstToRegisterCreateDto, RequestToRegister>();
             CreateMap<Course, CourseSelectItemDto>();
-            CreateMap<Course, CourseCreateOrUpdateReturnDto>()
-                .ForMember(dest => dest.difficultyLevel, opt => opt.MapFrom(src => Enum.GetName(typeof(DifficultyLevel), src.difficultyLevel)))
-                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => Enum.GetName(typeof(Language), src.Language)));
+            CreateMap<Course, CourseCreateOrUpdateReturnDto>();
+                
             CreateMap<CourseCreateDto, Course>();
                  
 
