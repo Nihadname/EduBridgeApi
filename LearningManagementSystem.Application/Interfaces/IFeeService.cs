@@ -13,5 +13,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<Result<string>> CreateFeeAndAssignToStudent(FeeCreateDto feeCreateDto);
         Task CreateFeeToAllStudents(CancellationToken stoppingToken);
         Task<Result<string>> UploadImageOfBankTransfer(FeeImageUploadDto feeImageUploadDto);
+        Task<Result<string>> VerifyFee(Guid id);
     }
 }

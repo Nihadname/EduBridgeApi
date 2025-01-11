@@ -125,12 +125,12 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-                Result<Note>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+               return Result<Note>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
             }
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                Result<Note>.Failure("Id", "User ID cannot be null", ErrorType.ValidationError);
+               return Result<Note>.Failure("Id", "User ID cannot be null", ErrorType.ValidationError);
             }
             var cacheKey = $"Note_{id}";
             var cachedNote = await _cache.GetOrSetAsync<Note>(cacheKey, async _ =>
@@ -140,7 +140,7 @@ namespace LearningManagementSystem.Application.Implementations
             });
             if (cachedNote is null)
             {
-                Result<Note>.Failure("Note", "Note not found", ErrorType.NotFoundError);
+             return   Result<Note>.Failure("Note", "Note not found", ErrorType.NotFoundError);
             }
             return Result<Note>.Success(cachedNote);
         }

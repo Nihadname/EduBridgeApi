@@ -25,7 +25,6 @@ namespace LearningManagementSystem.Application.Implementations
     public class AuthService : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
-        
         private readonly JwtSettings _jwtSettings;
         private readonly ITokenService tokenService;
         private readonly ApplicationDbContext _context;

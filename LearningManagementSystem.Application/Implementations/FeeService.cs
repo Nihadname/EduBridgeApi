@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using Stripe;
 using System.Security.Claims;
 
 namespace LearningManagementSystem.Application.Implementations
@@ -94,5 +95,59 @@ namespace LearningManagementSystem.Application.Implementations
             existedFee.ProvementImageUrl= await _photoOrVideoService.UploadMediaAsync(feeImageUploadDto.image, false);
           return  Result<string>.Success("yout request is accpeted , now our admins will check your banktransfer image");
         }
+        public async Task<Result<string>> VerifyFee(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+              return  Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+            }
+            var existedFee=await _unitOfWork.FeeRepository.GetEntity(s=>s.Id==id&!s.IsDeleted);
+            if (existedFee is null) return Result<string>.Failure(null, "fee is null", ErrorType.NotFoundError);
+            if (existedFee.ProvementImageUrl != null && existedFee.IsBankTransferAccepted)
+                return Result<string>.Failure("Fee", "Fee already acceppted", ErrorType.BusinessLogicError);
+            existedFee.PaymentStatus=PaymentStatus.Paid;
+            existedFee.IsBankTransferAccepted=true;
+            existedFee.PaidDate=DateTime.Now;
+            await _unitOfWork.FeeRepository.Update(existedFee);
+            await _unitOfWork.Commit();
+            return Result<string>.Success($"this {id} is accepted");
+        }
+        public async Task<Result<FeeResponseDto>> ProcessPayment(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return Result<FeeResponseDto>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+            }
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Result<FeeResponseDto>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+            }
+            var existedUser = await _userManager.Users
+     .Include(u => u.Student)
+       .FirstOrDefaultAsync(u => u.Id == userId);
+            if (existedUser == null)
+            {
+                return Result<FeeResponseDto>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
+            }
+            var existedFee = await _unitOfWork.FeeRepository.GetEntity(s => s.Id == id && s.StudentId == existedUser.Student.Id && !s.IsDeleted);
+            if (existedFee == null)
+            {
+                return Result<FeeResponseDto>.Failure("Fee", "Fee  cannot be null or not  found", ErrorType.NotFoundError);
+            }
+            if (existedFee.PaymentStatus == PaymentStatus.Paid)
+            {
+                return Result<FeeResponseDto>.Failure("Fee", "Fee  already paid", ErrorType.BusinessLogicError);
+            }
+            var paymentIntentOptions = new PaymentIntentCreateOptions
+            {
+                Amount = (long?)existedFee.Amount,
+                Currency = request.Currency,
+                Customer = existedUser.CustomerId,
+                PaymentMethod = request.PaymentMethodId,
+                Confirm = true
+            };
+        }
+       
     }
 }
