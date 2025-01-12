@@ -15,5 +15,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<Result<string>> UploadImageOfBankTransfer(FeeImageUploadDto feeImageUploadDto);
         Task<Result<string>> VerifyFee(Guid id);
         Task<Result<FeeResponseDto>> ProcessPayment(Guid id, FeeHandleDto feeHandleDto);
+        Task<Result<bool>> IsFeePaid(string userId);
     }
 }

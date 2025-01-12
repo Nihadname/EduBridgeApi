@@ -5,6 +5,7 @@ using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Fee;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
+using LearningManagementSystem.Application.Helpers.Enums;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.Core.Entities.Common;
@@ -135,6 +136,12 @@ namespace LearningManagementSystem.Application.Implementations
                 {
                     return Result<FeeResponseDto>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
                 }
+                var rolesOfExistedUser =await _userManager.GetRolesAsync(existedUser);
+
+                if(existedUser.Student is null||!rolesOfExistedUser.Contains(RolesEnum.Student.ToString()))
+                {
+                    return Result<FeeResponseDto>.Failure("User", "User  is not student", ErrorType.UnauthorizedError);
+                }
                 var existedFee = await _unitOfWork.FeeRepository.GetEntity(s => s.Id == id && s.StudentId == existedUser.Student.Id && !s.IsDeleted);
                 if (existedFee == null)
                 {
@@ -192,6 +199,31 @@ namespace LearningManagementSystem.Application.Implementations
                 throw new CustomException(500, "Fee error", message);
             }
         }
-       
+       public async Task<Result<bool>> IsFeePaid(string userId)
+        {
+           
+            var existedUser = await _userManager.Users
+     .Include(u => u.Student)
+       .FirstOrDefaultAsync(u => u.Id == userId);
+            if (existedUser == null)
+            {
+                return Result<bool>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
+            }
+            var rolesOfExistedUser = await _userManager.GetRolesAsync(existedUser);
+
+            if (existedUser.Student is null || !rolesOfExistedUser.Contains(RolesEnum.Student.ToString()))
+            {
+                return Result<bool>.Failure("User", "User  is not student", ErrorType.UnauthorizedError);
+            }
+            var LatestFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(s=>s.StudentId==existedUser.Student.Id);
+            if(LatestFee == null) return Result<bool>.Failure("Fee", "Fee  cannot be null or not  found", ErrorType.NotFoundError);
+            if(LatestFee.PaymentStatus==PaymentStatus.Paid)
+              return  Result<bool>.Success(true);
+            else
+            {
+                return Result<bool>.Success(false);
+            }
+
+        }
     }
 }

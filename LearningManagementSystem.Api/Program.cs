@@ -105,6 +105,7 @@ app.UseRouting();
 app.UseCors("AllowAllOrigins");
 app.UseMiddleware<CustomExceptionMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<FeeProcessingMiddleware>();
 app.UseAuthorization();
 
 

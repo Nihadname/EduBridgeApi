@@ -267,17 +267,17 @@ namespace LearningManagementSystem.Application.Implementations
             }
             IList<string> roles = await _userManager.GetRolesAsync(User);
 
-            if (roles.Contains(RolesEnum.Student.ToString()))
-            {
-                var latestFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(
-                    s => s.StudentId == User.Student.Id && !s.IsDeleted
-                );
+            //if (roles.Contains(RolesEnum.Student.ToString()))
+            //{
+            //    var latestFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(
+            //        s => s.StudentId == User.Student.Id && !s.IsDeleted
+            //    );
 
-                if (latestFee is not null && latestFee.PaymentStatus != PaymentStatus.Paid)
-                {
-                    throw new CustomException(400, "PaymentRequired", "User must pay their fee for this month to log in.");
-                }
-            }
+            //    if (latestFee is not null && latestFee.PaymentStatus != PaymentStatus.Paid)
+            //    {
+            //        throw new CustomException(400, "PaymentRequired", "User must pay their fee for this month to log in.");
+            //    }
+            //}
             if (User.IsReportedHighly)
             {
                 throw new CustomException(400, "User", "You are reported too many times ,so account is locked now, we will contact with you");
