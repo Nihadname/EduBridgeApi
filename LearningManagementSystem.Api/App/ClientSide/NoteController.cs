@@ -27,7 +27,7 @@ namespace LearningManagementSystem.Api.App.ClientSide
         }
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [Benchmark]
+      
         public async Task<IActionResult> GetAll(int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null)

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hangfire;
+using LearningManagementSystem.Application.Dtos.Ai;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
@@ -14,6 +15,7 @@ using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Options;
 using Stripe;
 using System.Security.Claims;
@@ -181,7 +183,10 @@ namespace LearningManagementSystem.Application.Implementations
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null) throw new CustomException(400, "user", "user is null");
             var verificationCode = new Random().Next(100000, 999999).ToString();
-            user.VerificationCode = verificationCode;
+            string salt;
+            string hashedCode=verificationCode.GenerateHash(out salt);
+            user.VerificationCode = hashedCode;
+            user.Salt = salt;
             user.ExpiredDate = DateTime.UtcNow.AddMinutes(10);
             user.IsEmailVerificationCodeValid = false;
             await _userManager.UpdateAsync(user);
@@ -203,7 +208,9 @@ namespace LearningManagementSystem.Application.Implementations
         {
             var existedUser=await _userManager.FindByEmailAsync(verifyCodeDto.Email);
             if (existedUser is null) throw new CustomException(404, "User", "User is null");
-            if (existedUser.VerificationCode != verifyCodeDto.Code || existedUser.ExpiredDate < DateTime.UtcNow) 
+            bool isValid = HashExtension.VerifyHash(verifyCodeDto.Code,existedUser.Salt, existedUser.VerificationCode);
+
+            if (!isValid || existedUser.ExpiredDate < DateTime.UtcNow) 
                 throw new CustomException(400,"Code","Invalid or expired verification code.");
             existedUser.IsEmailVerificationCodeValid = true;
             existedUser.VerificationCode = null;

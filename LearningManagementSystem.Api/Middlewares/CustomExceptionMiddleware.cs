@@ -43,6 +43,7 @@ namespace LearningManagementSystem.Api.Middlewares
                     response.StatusCode = customException.Code;
                     errorResponse = new
                     {
+                        StatusCode = customException.Code,
                         Message = customException.Message,
                         Errors = customException.Errors
                     };
@@ -52,6 +53,7 @@ namespace LearningManagementSystem.Api.Middlewares
                     response.StatusCode = StatusCodes.Status500InternalServerError;
                     errorResponse = new
                     {
+                        StatusCode = StatusCodes.Status500InternalServerError,
                         Message = $"Exception message: {exception.Message}, Inner: {exception.InnerException?.Message ?? "None"}",
                         Errors = new Dictionary<string, string>()
                     };

@@ -89,6 +89,8 @@ builder.Services.Register(config);
 builder.Services.AddHostedService<FeeProcessing>();
 var stripeSettings = builder.Configuration.GetSection("Stripe");
 StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
+//var excludedPaths = builder.Configuration.GetSection("ExcludedPaths").Get<string[]>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -105,8 +107,8 @@ app.UseRouting();
 app.UseCors("AllowAllOrigins");
 app.UseMiddleware<CustomExceptionMiddleware>();
 app.UseAuthentication();
-app.UseMiddleware<FeeProcessingMiddleware>();
 app.UseAuthorization();
+app.UseMiddleware<FeeProcessingMiddleware>();
 
 
 app.MapControllers();

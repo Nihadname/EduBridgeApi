@@ -1,29 +1,44 @@
-﻿using LearningManagementSystem.Application.Interfaces;
+﻿using LearningManagementSystem.Application.Helpers.Enums;
+using LearningManagementSystem.Application.Interfaces;
+using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.Core.Entities.Common;
+using Microsoft.AspNetCore.Identity;
 
 namespace LearningManagementSystem.Api.Middlewares
 {
     public class FeeProcessingMiddleware
     {
         private readonly RequestDelegate _next;
-
-        public FeeProcessingMiddleware(RequestDelegate next)
+        private readonly IServiceProvider _serviceProvider;
+        private readonly HashSet<string> _excludedPaths;
+        private readonly ILogger<FeeProcessingMiddleware> _logger;
+        public FeeProcessingMiddleware(RequestDelegate next, IServiceProvider serviceProvider, ILogger<FeeProcessingMiddleware> logger)
         {
             _next = next;
+            _serviceProvider = serviceProvider;
+            _excludedPaths = new HashSet<string>(new[] { "/api/Fee/ProcessPayment", "/api/Fee/UploadImageOfBankTransfer" }, StringComparer.OrdinalIgnoreCase);
+            _logger = logger;
         }
         public async Task InvokeAsync(HttpContext context)
         {
-            var excludedPaths = new[] { "/Fee/ProcessPayment", "/Fee/UploadImageOfBankTransfer" }; // Add payment-related endpoints here
-
-            if (excludedPaths.Contains(context.Request.Path.Value, StringComparer.OrdinalIgnoreCase))
+            var request = context.Request.Path.Value;
+            if (_excludedPaths.Any(path => request.ToLower().StartsWith(path.ToLower())))
             {
                 await _next(context);
                 return;
             }
 
+
             if (context.User.Identity?.IsAuthenticated == true)
             {
-                var userId = context.User.FindFirst("UserId")?.Value; 
+                var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userManager = context.RequestServices.GetService<UserManager<AppUser>>();
+                var existedUser= await userManager.FindByIdAsync(userId);
+                if(existedUser is null||!(await userManager.GetRolesAsync(existedUser)).Contains(RolesEnum.Student.ToString()))
+                {
+                    await _next(context);
+                    return;
+                }
                 var feeService = context.RequestServices.GetService<IFeeService>();
 
                 if (!string.IsNullOrEmpty(userId) && feeService != null)
@@ -31,14 +46,21 @@ namespace LearningManagementSystem.Api.Middlewares
                     Result<bool> isFeePaid = await feeService.IsFeePaid(userId);
                     if (!isFeePaid.Data)
                     {
+                        var errorResponse = new
+                        {
+                            StatusCode = StatusCodes.Status403Forbidden,
+                            Message = "Access denied. Fees are unpaid.",
+                            Errors = new { Reason = "User has not paid the required fees." }
+                        };
+
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                        await context.Response.WriteAsync("Access denied. Fees are unpaid.");
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(errorResponse));
                         return;
                     }
                 }
             }
 
-            // Proceed to the next middleware if authenticated or not checked
             await _next(context);
         }
 
