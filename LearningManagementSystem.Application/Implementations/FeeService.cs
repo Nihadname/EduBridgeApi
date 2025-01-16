@@ -23,6 +23,7 @@ namespace LearningManagementSystem.Application.Implementations
     public class FeeService :  IFeeService
     {
         private readonly IUnitOfWork _unitOfWork;
+
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -167,6 +168,9 @@ namespace LearningManagementSystem.Application.Implementations
                 {
                     existedFee.PaymentStatus = PaymentStatus.Paid;
                     existedFee.PaidDate = DateTime.Now;
+                    existedFee.PaymentMethod = Core.Entities.PaymentMethod.CreditCard;
+                    existedFee.PaymentReference = paymentIntent.ClientSecret;
+                    existedFee.Description= feeHandleDto.Description;
                     await _unitOfWork.Commit();
                     var mappedUser = _mapper.Map<AppUserInFee>(existedUser);
                     return Result<FeeResponseDto>.Success(new FeeResponseDto

@@ -12,6 +12,11 @@ namespace LearningManagementSystem.Application.Validators.FeeValidators
     {
         public FeeHandleDtoValidator()
         {
+            RuleFor(x => x.Description)
+            .NotEmpty()
+            .MinimumLength(3)
+            .MaximumLength(160)
+            .When(x => x.Description != null);
             RuleFor(s => s.PaymentMethodId).NotEmpty();
         }
     }
