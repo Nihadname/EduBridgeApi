@@ -8,7 +8,6 @@ namespace LearningManagementSystem.Application.Dtos.Fee
 {
     public class FeeHandleDto
     {
-        public string Currency {  get; set; }
         public string PaymentMethodId { get; set; }
     }
 }

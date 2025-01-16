@@ -12,7 +12,6 @@ namespace LearningManagementSystem.Application.Validators.FeeValidators
     {
         public FeeHandleDtoValidator()
         {
-            RuleFor(s => s.Currency).NotEmpty();
             RuleFor(s => s.PaymentMethodId).NotEmpty();
         }
     }

@@ -115,7 +115,7 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return Result<string>.Success($"this {id} is accepted");
         }
-        public async Task<Result<FeeResponseDto>> ProcessPayment(Guid id, FeeHandleDto feeHandleDto)
+        public async Task<Result<FeeResponseDto>> ProcessPayment(Guid id,FeeHandleDto feeHandleDto)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -153,10 +153,12 @@ namespace LearningManagementSystem.Application.Implementations
                 }
                 var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
-                    Amount = (long?)existedFee.Amount,
-                    Currency = feeHandleDto.Currency,
-                    Customer = existedUser.CustomerId,
-                    PaymentMethod = feeHandleDto.PaymentMethodId,
+                    Amount = (long)(existedFee.Amount * 100), 
+                    Currency = "usd",
+                    Customer = existedUser.CustomerId != null ? existedUser.CustomerId : null, 
+                    PaymentMethodTypes = new List<string> { "card" },
+                    PaymentMethod = feeHandleDto.PaymentMethodId, 
+
                     Confirm = true
                 };
                 var paymentIntentService = new PaymentIntentService();
@@ -170,7 +172,7 @@ namespace LearningManagementSystem.Application.Implementations
                     return Result<FeeResponseDto>.Success(new FeeResponseDto
                     {
                         Amount = existedFee.Amount,
-                        Currency = feeHandleDto.Currency,
+                        Currency = "usd",
                         Customer = mappedUser,
                         clientSecret = paymentIntent.ClientSecret,
                         Message = "Payment successful and fee status updated."

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Hangfire;
-using LearningManagementSystem.Application.Dtos.Ai;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
@@ -15,7 +14,6 @@ using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Options;
 using Stripe;
 using System.Security.Claims;
