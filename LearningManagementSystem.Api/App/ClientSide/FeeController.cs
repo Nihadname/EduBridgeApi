@@ -29,6 +29,12 @@ namespace LearningManagementSystem.Api.App.ClientSide
         {
             return Ok(await _feeService.ProcessPayment(id, feeHandleDto));
         }
-
+        [HttpGet("GetAllFeesForUser")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetAllFeesForUser(DateTime? startPaidDate, DateTime? endPaidDateTime, int pageNumber = 1,
+           int pageSize = 10)
+        {
+            return Ok(await _feeService.GetAllOfUsersFees(startPaidDate, endPaidDateTime, pageNumber, pageSize));
+        }
     }
 }

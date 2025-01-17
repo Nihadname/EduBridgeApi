@@ -159,7 +159,6 @@ namespace LearningManagementSystem.Application.Implementations
                     Customer = existedUser.CustomerId != null ? existedUser.CustomerId : null, 
                     PaymentMethodTypes = new List<string> { "card" },
                     PaymentMethod = feeHandleDto.PaymentMethodId, 
-
                     Confirm = true
                 };
                 var paymentIntentService = new PaymentIntentService();
@@ -229,6 +228,29 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 return Result<bool>.Success(false);
             }
+
+        }
+        public async Task<Result<PaginationDto<FeeListItemDto>>> GetAllOfUsersFees(DateTime? startPaidDate, DateTime? endPaidDateTime, int pageNumber = 1,
+           int pageSize = 10)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Result<PaginationDto<FeeListItemDto>>.Failure("UserId", "User ID cannot be null", ErrorType.ValidationError);
+            }
+
+            var feesQuery = await _unitOfWork.FeeRepository.GetQuery(s => s.Student.AppUserId == userId && s.IsDeleted == false, includes: new Func<IQueryable<Fee>, IQueryable<Fee>>[]
+            {
+                query => query.Include(s=>s.Student)
+            });
+            if (startPaidDate != null || endPaidDateTime != null)
+                feesQuery = feesQuery.Where(o => (startPaidDate == null || o.PaidDate >= startPaidDate) &&
+                (endPaidDateTime == null || o.PaidDate <= endPaidDateTime));
+            var totalCount= feesQuery.Count();
+            var paginatedQuery = (IEnumerable<Fee>)await feesQuery.ToListAsync();
+            var mappedFees = _mapper.Map<List<FeeListItemDto>>(paginatedQuery);
+            var paginationResult = await PaginationDto<FeeListItemDto>.Create((IEnumerable<FeeListItemDto>)mappedFees, pageNumber, pageSize, totalCount);
+            return Result<PaginationDto<FeeListItemDto>>.Success(paginationResult);
 
         }
     }

@@ -16,5 +16,7 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<Result<string>> VerifyFee(Guid id);
         Task<Result<FeeResponseDto>> ProcessPayment(Guid id, FeeHandleDto feeHandleDto);
         Task<Result<bool>> IsFeePaid(string userId);
+        Task<Result<PaginationDto<FeeListItemDto>>> GetAllOfUsersFees(DateTime? startPaidDate, DateTime? endPaidDateTime, int pageNumber = 1,
+           int pageSize = 10);
     }
 }

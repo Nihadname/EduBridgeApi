@@ -76,6 +76,7 @@ namespace LearningManagementSystem.Application.Profiles
                 .ForMember(s => s.Lessons, map => map.MapFrom(d => d.lessons));
             CreateMap<FeeCreateDto, Fee>();
             CreateMap<AppUser, AppUserInFee>();
+            CreateMap<Fee, FeeListItemDto>();
         }
     }
 }
