@@ -97,7 +97,9 @@ namespace LearningManagementSystem.Application.Implementations
             }
             existedFee.PaymentMethod=Core.Entities.PaymentMethod.BankTransfer;
             existedFee.ProvementImageUrl= await _photoOrVideoService.UploadMediaAsync(feeImageUploadDto.image, false);
-          return  Result<string>.Success("yout request is accpeted , now our admins will check your banktransfer image");
+            await _unitOfWork.FeeRepository.Update(existedFee);
+            await _unitOfWork.Commit();
+            return Result<string>.Success("yout request is accpeted , now our admins will check your banktransfer image");
         }
         public async Task<Result<string>> VerifyFee(Guid id)
         {
@@ -170,6 +172,7 @@ namespace LearningManagementSystem.Application.Implementations
                     existedFee.PaymentMethod = Core.Entities.PaymentMethod.CreditCard;
                     existedFee.PaymentReference = paymentIntent.ClientSecret;
                     existedFee.Description= feeHandleDto.Description;
+                    await _unitOfWork.FeeRepository.Update(existedFee);
                     await _unitOfWork.Commit();
                     var mappedUser = _mapper.Map<AppUserInFee>(existedUser);
                     return Result<FeeResponseDto>.Success(new FeeResponseDto
@@ -252,6 +255,17 @@ namespace LearningManagementSystem.Application.Implementations
             var paginationResult = await PaginationDto<FeeListItemDto>.Create((IEnumerable<FeeListItemDto>)mappedFees, pageNumber, pageSize, totalCount);
             return Result<PaginationDto<FeeListItemDto>>.Success(paginationResult);
 
+        }
+        public async Task<Result<FeeReturnDto>> GetById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return Result<FeeReturnDto>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+            }
+            var existedFee = await _unitOfWork.FeeRepository.GetEntity(s => s.Id == id & !s.IsDeleted);
+            if (existedFee is null) return Result<FeeReturnDto>.Failure(null, "fee is null", ErrorType.NotFoundError);
+            var mappedFee=_mapper.Map<FeeReturnDto>(existedFee);
+            return Result<FeeReturnDto>.Success(mappedFee);
         }
     }
 }

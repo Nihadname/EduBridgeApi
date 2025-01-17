@@ -16,7 +16,7 @@ namespace LearningManagementSystem.Api.Middlewares
         {
             _next = next;
             _serviceProvider = serviceProvider;
-            _excludedPaths = new HashSet<string>(new[] { "/api/Fee/ProcessPayment", "/api/Fee/UploadImageOfBankTransfer" }, StringComparer.OrdinalIgnoreCase);
+            _excludedPaths = new HashSet<string>(new[] { "/api/Fee/ProcessPayment", "/api/Fee/UploadImageOfBankTransfer", "/api/Fee/GetAllFeesForUser" }, StringComparer.OrdinalIgnoreCase);
             _logger = logger;
         }
         public async Task InvokeAsync(HttpContext context)

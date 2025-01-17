@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Dtos.Fee
 {
-    public class FeeListItemDto
+    public class FeeReturnDto
     {
         public Guid Id { get; set; }
         public decimal Amount { get; set; }
@@ -16,5 +16,7 @@ namespace LearningManagementSystem.Application.Dtos.Fee
         public PaymentStatus PaymentStatus { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public string PaymentReference { get; set; }
+        public string ProvementImageUrl { get; set; }
+        public string Description { get; set; }
     }
 }

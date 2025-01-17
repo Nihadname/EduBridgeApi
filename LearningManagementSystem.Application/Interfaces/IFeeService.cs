@@ -18,5 +18,6 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<Result<bool>> IsFeePaid(string userId);
         Task<Result<PaginationDto<FeeListItemDto>>> GetAllOfUsersFees(DateTime? startPaidDate, DateTime? endPaidDateTime, int pageNumber = 1,
            int pageSize = 10);
+        Task<Result<FeeReturnDto>> GetById(Guid id);
     }
 }
