@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet.Actions;
 using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Fee;
 using LearningManagementSystem.Application.Dtos.Note;
@@ -96,6 +97,8 @@ namespace LearningManagementSystem.Application.Implementations
         {
             var existedCourseResult = await GetCourseById(id);
             var existedCourse=existedCourseResult.Data;
+           var deletingStatus =await _photoOrVideoService.DeleteMediaAsync(existedCourse.ImageUrl, ResourceType.Image);
+            if (deletingStatus != "deleted") Result<string>.Failure(null, "Error with deleting",ErrorType.SystemError);
       await _unitOfWork.CourseRepository.Delete(existedCourse);
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted");

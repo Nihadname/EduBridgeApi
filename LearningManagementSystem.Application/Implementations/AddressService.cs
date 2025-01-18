@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Address;
+using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
@@ -116,9 +117,17 @@ namespace LearningManagementSystem.Application.Implementations
             return Result<string>.Success("Deleted By User");
         }
         public async Task<Result<PaginationDto<AddressListItemDto>>> GetAll(int pageNumber = 1,
-           int pageSize = 10,string searchquery=null)
+           int pageSize = 10,string searchQuery=null)
         {
-            return Result<PaginationDto<AddressListItemDto>>.Success(null);
+            var addressQuery = await _unitOfWork.AddressRepository.GetQuery(s=>s.IsDeleted==false, true, true);
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                addressQuery = addressQuery.Where(s => s.City.Contains(searchQuery) || s.Country.Contains(searchQuery));
+            }
+            addressQuery = addressQuery.OrderByDescending(s => s.CreatedTime);
+            var paginationResult = await PaginationDto<AddressListItemDto>.Create(
+                addressQuery.Select(f => _mapper.Map<AddressListItemDto>(f)), pageNumber, pageSize);
+            return Result<PaginationDto<AddressListItemDto>>.Success(paginationResult);
         }
     }
 }

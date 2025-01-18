@@ -8,12 +8,7 @@ using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LearningManagementSystem.Application.Implementations
 {
@@ -69,8 +64,8 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 throw new CustomException(400, "Reports", "amount of reports you can have reached limit");
             }
-            var MappedReport = _mapper.Map<Report>(reportCreateDto);
-            await _unitOfWork.ReportRepository.Create(MappedReport);
+            var mappedReport = _mapper.Map<Report>(reportCreateDto);
+            await _unitOfWork.ReportRepository.Create(mappedReport);
             await _unitOfWork.Commit();
             var countOfReportedUser=await _unitOfWork.ReportRepository.GetAll(s=>s.ReportedUserId==ReportedUser.Id);
             if (countOfReportedUser.Count() >= 3 && !ReportedUser.IsReportedHighly)
@@ -78,7 +73,7 @@ namespace LearningManagementSystem.Application.Implementations
                 ReportedUser.IsReportedHighly = true;
                 await  _userManager.UpdateAsync(ReportedUser);
             }
-            var IncludedMappedReport=await _unitOfWork.ReportRepository.GetEntity(s=>s.Id==MappedReport.Id, includes: new Func<IQueryable<Report>, IQueryable<Report>>[]
+            var IncludedMappedReport=await _unitOfWork.ReportRepository.GetEntity(s=>s.Id==mappedReport.Id, includes: new Func<IQueryable<Report>, IQueryable<Report>>[]
             {
                 query => query.Include(s=>s.ReportedUser).Include(s=>s.ReportOption)
             });    

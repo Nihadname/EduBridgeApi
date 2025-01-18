@@ -67,28 +67,7 @@ namespace LearningManagementSystem.Application.Implementations
             Student.IsEnrolled=false;
             await _unitOfWork.StudentRepository.Create(Student);
            await _unitOfWork.Commit();
-            var ExistedRequestRegister = await _unitOfWork.RequstToRegisterRepository.GetEntity(s => s.Email == appUser.Email);
-            if (ExistedRequestRegister != null)
-            {
-                string body;
-                using (StreamReader sr = new StreamReader("wwwroot/templates/SendingAccountInformation.html"))
-                {
-                    body = sr.ReadToEnd();
-                }
-                body = body.Replace("{{UserName}}", appUser.UserName).Replace("{{Password}}",registerDto.Password)
-                    .Replace("{{Email}}", appUser.Email);
-                BackgroundJob.Enqueue(() => _emailService.SendEmail(
-                   "nihadcoding@gmail.com",
-                   appUser.Email,
-                   "Account details",
-                   body,
-                   "smtp.gmail.com",
-                   587,
-                   true,
-                   "nihadcoding@gmail.com",
-                   "gulzclohfwjelppj"
-               ));
-            }
+           
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
             return MappedUser;
         }
@@ -171,6 +150,28 @@ namespace LearningManagementSystem.Application.Implementations
                 var errorMessages = result.Errors.ToDictionary(e => e.Code, e => e.Description);
 
                 throw new CustomException(400, errorMessages);
+            }
+            var ExistedRequestRegister = await _unitOfWork.RequstToRegisterRepository.GetEntity(s => s.Email == appUser.Email);
+            if (ExistedRequestRegister != null)
+            {
+                string body;
+                using (StreamReader sr = new StreamReader("wwwroot/templates/SendingAccountInformation.html"))
+                {
+                    body = sr.ReadToEnd();
+                }
+                body = body.Replace("{{UserName}}", appUser.UserName).Replace("{{Password}}", registerDto.Password)
+                    .Replace("{{Email}}", appUser.Email);
+                BackgroundJob.Enqueue(() => _emailService.SendEmail(
+                   "nihadcoding@gmail.com",
+                   appUser.Email,
+                   "Account details",
+                   body,
+                   "smtp.gmail.com",
+                   587,
+                   true,
+                   "nihadcoding@gmail.com",
+                   "gulzclohfwjelppj"
+               ));
             }
             await SendVerificationCode(appUser.Email);
             return appUser;

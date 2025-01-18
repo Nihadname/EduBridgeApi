@@ -18,18 +18,18 @@ namespace LearningManagementSystem.Application.Extensions
             }
             salt = Convert.ToBase64String(saltBytes);
             var combinedBytes = Encoding.UTF8.GetBytes(salt + code);
-            using (var sha256 = SHA256.Create())
+            using (var mD5 = MD5.Create())
             {
-                var hashBytes = sha256.ComputeHash(combinedBytes);
+                var hashBytes = mD5.ComputeHash(combinedBytes);
                 return Convert.ToBase64String(hashBytes);
             }
         }
         public static bool VerifyHash( string code, string salt, string hashedCode)
         {
             var combinedBytes = Encoding.UTF8.GetBytes(salt + code);
-            using (var sha256 = SHA256.Create())
+            using (var mD5 = MD5.Create())
             {
-                var hashBytes = sha256.ComputeHash(combinedBytes);
+                var hashBytes = mD5.ComputeHash(combinedBytes);
                 string computedHash = Convert.ToBase64String(hashBytes);
                 return computedHash == hashedCode;
             }

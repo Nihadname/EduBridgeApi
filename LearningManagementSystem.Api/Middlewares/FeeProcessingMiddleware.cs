@@ -2,6 +2,7 @@
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
 using LearningManagementSystem.Core.Entities.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace LearningManagementSystem.Api.Middlewares
@@ -23,6 +24,13 @@ namespace LearningManagementSystem.Api.Middlewares
         {
             var request = context.Request.Path.Value;
             if (_excludedPaths.Any(path => request.ToLower().StartsWith(path.ToLower())))
+            {
+                await _next(context);
+                return;
+            }
+            var endpoint = context.GetEndpoint();
+            var hasAuthorizeAttribute = endpoint?.Metadata.Any(meta => meta is AuthorizeAttribute) ?? false;
+            if (!hasAuthorizeAttribute)
             {
                 await _next(context);
                 return;
