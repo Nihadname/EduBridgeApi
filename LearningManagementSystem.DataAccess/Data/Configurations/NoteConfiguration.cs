@@ -18,6 +18,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s=>s.CategoryName).HasMaxLength(90);
             builder.HasOne(s=>s.AppUser).WithMany(a => a.Notes)
         .OnDelete(DeleteBehavior.Cascade);
+            builder.HasIndex(s => s.CreatedTime);
         }
     }
 }

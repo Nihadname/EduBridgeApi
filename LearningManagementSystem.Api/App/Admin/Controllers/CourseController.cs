@@ -52,7 +52,7 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
             return Ok(await _courseService.Delete(id));
         }
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
+        public async Task<IActionResult> GetAll([FromQuery] List<Guid> TeacherIds, int pageNumber = 1,
            int pageSize = 10,
            string searchQuery = null)
         {

@@ -249,6 +249,7 @@ namespace LearningManagementSystem.Application.Implementations
             if (startPaidDate != null || endPaidDateTime != null)
                 feesQuery = feesQuery.Where(o => (startPaidDate == null || o.PaidDate >= startPaidDate) &&
                 (endPaidDateTime == null || o.PaidDate <= endPaidDateTime));
+            feesQuery = feesQuery.OrderByDescending(o => o.PaidDate);
             var paginatedResult = await PaginationDto<FeeListItemDto>.Create(
                 feesQuery.Select(f => _mapper.Map<FeeListItemDto>(f)), pageNumber, pageSize);
             return Result<PaginationDto<FeeListItemDto>>.Success(paginatedResult);

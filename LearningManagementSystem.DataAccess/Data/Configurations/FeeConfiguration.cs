@@ -18,6 +18,8 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s => s.CreatedTime).HasDefaultValueSql("GETDATE()");
             builder.Property(s => s.UpdatedTime).HasDefaultValueSql("GETDATE()");
             builder.HasKey(e => e.Id);
+            builder.HasIndex(s => s.CreatedTime);
+            builder.HasIndex(s => s.PaidDate);
             builder.Property(s => s.Amount).HasColumnType("decimal(18, 2)");
             builder.Property(s => s.DiscountPercentage).HasColumnType("decimal(18, 2)");
             builder.Property(s => s.DiscountedPrice).HasColumnType("decimal(18, 2)");

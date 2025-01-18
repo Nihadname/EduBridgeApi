@@ -19,6 +19,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.HasKey(e => e.Id);
             builder.Property(s=>s.ChildAge).IsRequired(false);
             builder.Property(s=>s.IsAccepted).HasDefaultValue(false);
+            builder.HasIndex(s => s.CreatedTime);
         }
     }
 }

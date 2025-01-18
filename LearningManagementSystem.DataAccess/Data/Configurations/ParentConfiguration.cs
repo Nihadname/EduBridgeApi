@@ -15,6 +15,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
         {
             builder.HasOne(s=>s.AppUser).WithOne(a => a.Parent)
         .OnDelete(DeleteBehavior.Cascade);
+            builder.HasIndex(s => s.CreatedTime);
         }
     }
 }

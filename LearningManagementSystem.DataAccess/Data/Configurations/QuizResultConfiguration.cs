@@ -18,6 +18,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s => s.UpdatedTime).HasDefaultValueSql("GETDATE()");
             builder.HasKey(e => e.Id);
             builder.Property(s => s.Score).HasColumnType("decimal(18, 2)");
+            builder.HasIndex(s => s.CreatedTime);
 
         }
     }

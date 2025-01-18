@@ -19,6 +19,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.HasKey(e => e.Id);
             builder.Property(s => s.Salary).HasColumnType("decimal(18, 2)");
             builder.HasOne(s=>s.AppUser).WithOne(s=>s.Teacher).OnDelete(DeleteBehavior.Cascade);
+            builder.HasIndex(s => s.CreatedTime);
         }
     }
 }

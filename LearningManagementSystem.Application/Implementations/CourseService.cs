@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LearningManagementSystem.Application.Dtos.Course;
+using LearningManagementSystem.Application.Dtos.Fee;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
@@ -99,7 +100,7 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted");
         }
-        public async Task<Result<PaginationDto<CourseListItemDto>>> GetAll(List<Guid> TeacherIds, int pageNumber = 1,
+        public async Task<Result<PaginationDto<CourseListItemDto>>> GetAll(List<Guid> TeacherIds=null, int pageNumber = 1,
            int pageSize = 10, 
            string searchQuery = null)
         {
@@ -120,11 +121,10 @@ namespace LearningManagementSystem.Application.Implementations
                     courseQuery = courseQuery.Where(s => s.lessons.Any(s => s.TeacherId == TeacherId));
                 }
             }
+            courseQuery = courseQuery.OrderByDescending(s => s.CreatedTime);
 
-
-            var mappedNotes = _mapper.Map<IQueryable<CourseListItemDto>>(courseQuery);
-
-            var paginationResult = await PaginationDto<CourseListItemDto>.Create(mappedNotes, pageNumber, pageSize);
+            var paginationResult = await PaginationDto<CourseListItemDto>.Create(
+                courseQuery.Select(f => _mapper.Map<CourseListItemDto>(f)), pageNumber, pageSize);
 
             return Result<PaginationDto<CourseListItemDto>>.Success(paginationResult);
         }

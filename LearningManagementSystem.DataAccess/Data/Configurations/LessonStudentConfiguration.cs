@@ -17,6 +17,7 @@ namespace LearningManagementSystem.DataAccess.Data.Configurations
             builder.Property(s => s.CreatedTime).HasDefaultValueSql("GETDATE()");
             builder.Property(s => s.UpdatedTime).HasDefaultValueSql("GETDATE()");
             builder.HasKey(e => e.Id);
+            builder.HasIndex(s => s.CreatedTime);
             builder.HasKey(ls => new { ls.LessonId, ls.StudentId });
             builder.HasOne(ls => ls.Lesson)
         .WithMany(l => l.lessonStudents)

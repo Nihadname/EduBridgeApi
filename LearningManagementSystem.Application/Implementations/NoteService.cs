@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Fee;
 using LearningManagementSystem.Application.Dtos.Note;
 using LearningManagementSystem.Application.Interfaces;
@@ -70,9 +71,10 @@ namespace LearningManagementSystem.Application.Implementations
                 notesQuery = notesQuery.Where(s => s.Title.Contains(searchQuery) || s.Description.Contains(searchQuery));
             }
 
-            var mappedNotes = _mapper.Map<IQueryable<NoteListItemDto>>(notesQuery);
-
-            var paginationResult = await PaginationDto<NoteListItemDto>.Create(mappedNotes, pageNumber, pageSize);
+             notesQuery=notesQuery.OrderByDescending(s => s.CreatedTime);
+            var paginationResult = await PaginationDto<NoteListItemDto>
+                .Create(
+                notesQuery.Select(f => _mapper.Map<NoteListItemDto>(f)), pageNumber, pageSize);
 
             return Result<PaginationDto<NoteListItemDto>>.Success(paginationResult);
         }
