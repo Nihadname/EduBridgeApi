@@ -78,6 +78,7 @@ namespace LearningManagementSystem.Application.Profiles
             CreateMap<AppUser, AppUserInFee>();
             CreateMap<Fee, FeeListItemDto>();
             CreateMap<Fee, FeeReturnDto>();
+            CreateMap<Address, AddressListItemDto>();
         }
     }
 }

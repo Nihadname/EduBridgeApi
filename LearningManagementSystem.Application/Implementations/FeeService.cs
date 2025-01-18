@@ -233,7 +233,7 @@ namespace LearningManagementSystem.Application.Implementations
             }
 
         }
-        public async Task<Result<PaginationDto<FeeListItemDto>>> GetAllOfUsersFees(DateTime? startPaidDate, DateTime? endPaidDateTime, int pageNumber = 1,
+        public async Task<Result<PaginationDto<FeeListItemDto>>> GetAllOfUsersFees(DateTime? startPaidDate=null, DateTime? endPaidDateTime=null, int pageNumber = 1,
            int pageSize = 10)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -249,11 +249,9 @@ namespace LearningManagementSystem.Application.Implementations
             if (startPaidDate != null || endPaidDateTime != null)
                 feesQuery = feesQuery.Where(o => (startPaidDate == null || o.PaidDate >= startPaidDate) &&
                 (endPaidDateTime == null || o.PaidDate <= endPaidDateTime));
-            var totalCount= feesQuery.Count();
-            var paginatedQuery = (IEnumerable<Fee>)await feesQuery.ToListAsync();
-            var mappedFees = _mapper.Map<List<FeeListItemDto>>(paginatedQuery);
-            var paginationResult = await PaginationDto<FeeListItemDto>.Create((IEnumerable<FeeListItemDto>)mappedFees, pageNumber, pageSize, totalCount);
-            return Result<PaginationDto<FeeListItemDto>>.Success(paginationResult);
+            var paginatedResult = await PaginationDto<FeeListItemDto>.Create(
+                feesQuery.Select(f => _mapper.Map<FeeListItemDto>(f)), pageNumber, pageSize);
+            return Result<PaginationDto<FeeListItemDto>>.Success(paginatedResult);
 
         }
         public async Task<Result<FeeReturnDto>> GetById(Guid id)

@@ -115,5 +115,10 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted By User");
         }
+        public async Task<Result<PaginationDto<AddressListItemDto>>> GetAll(int pageNumber = 1,
+           int pageSize = 10,string searchquery=null)
+        {
+            return Result<PaginationDto<AddressListItemDto>>.Success(null);
+        }
     }
 }

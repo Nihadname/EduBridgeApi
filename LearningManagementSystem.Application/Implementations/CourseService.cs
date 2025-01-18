@@ -115,17 +115,16 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 foreach (var TeacherId in TeacherIds)
                 {
-                    if(!await _unitOfWork.TeacherRepository.isExists(s=>s.Id== TeacherId)) throw new CustomException(400, "TeacherId", "TeacherId is invalid");
+                    if (!await _unitOfWork.TeacherRepository.isExists(s => s.Id == TeacherId))
+                       return Result<PaginationDto<CourseListItemDto>>.Failure("TeacherId", "TeacherId is invalid", ErrorType.NotFoundError);
                     courseQuery = courseQuery.Where(s => s.lessons.Any(s => s.TeacherId == TeacherId));
                 }
             }
-            var totalCount = await courseQuery.CountAsync();
 
-            var paginatedQuery = (IEnumerable<Course>)await courseQuery.ToListAsync();
 
-            var mappedNotes = _mapper.Map<List<CourseListItemDto>>(paginatedQuery);
+            var mappedNotes = _mapper.Map<IQueryable<CourseListItemDto>>(courseQuery);
 
-            var paginationResult = await PaginationDto<CourseListItemDto>.Create((IEnumerable<CourseListItemDto>)mappedNotes, pageNumber, pageSize, totalCount);
+            var paginationResult = await PaginationDto<CourseListItemDto>.Create(mappedNotes, pageNumber, pageSize);
 
             return Result<PaginationDto<CourseListItemDto>>.Success(paginationResult);
         }

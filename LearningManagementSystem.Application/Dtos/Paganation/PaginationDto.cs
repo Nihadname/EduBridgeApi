@@ -1,7 +1,9 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
+
 public class PaginationDto<T> 
 {
-    public PaginationDto(IEnumerable<T> items, int currentPage, int totalPages, int totalRecords, int pageSize)
+    public PaginationDto(List<T> items, int currentPage, int totalPages, int totalRecords, int pageSize)
     {
         Items = items;
         CurrentPage = currentPage;
@@ -10,7 +12,7 @@ public class PaginationDto<T>
         PageSize = pageSize;
     }
 
-    public IEnumerable<T> Items { get; set; }
+    public List<T> Items { get; set; }
     public int CurrentPage { get; set; }
     public int TotalPages { get; set; }
     public int TotalRecords { get; set; }
@@ -20,11 +22,15 @@ public class PaginationDto<T>
     public bool HasPrev => CurrentPage > 1;
 
 
-    public static async Task<PaginationDto<T>> Create(IEnumerable<T> items, int page, int take, int totalCount)
+    public static async Task<PaginationDto<T>> Create(IQueryable<T> query, int page, int pageSize)
     {
-        var totalPages = (int)Math.Ceiling((decimal)totalCount / take);
-     items=  items.Skip((page - 1) * take)
-                .Take(take);
-        return new PaginationDto<T>(items, page, totalPages, totalCount, take);
+        int totalCount = await query.CountAsync(); 
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return new PaginationDto<T>(items, page, totalPages, totalCount, pageSize);
     }
 }
