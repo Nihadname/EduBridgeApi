@@ -102,11 +102,11 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<Result<string>> DeleteForUser(Guid id)
         {
-            if (id == Guid.Empty) Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+            if (id == Guid.Empty) return Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                Result<string>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+               return Result<string>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
            var existedUser=await _userManager.FindByIdAsync(userId);
             if(existedUser is null) return Result<string>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
@@ -116,13 +116,21 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted By User");
         }
-        public async Task<Result<PaginationDto<AddressListItemDto>>> GetAll(int pageNumber = 1,
-           int pageSize = 10,string searchQuery=null)
+        public async Task<Result<PaginationDto<AddressListItemDto>>> GetAll(string appUserId=null,int pageNumber = 1,
+           int pageSize = 10, string searchQuery = null)
         {
             var addressQuery = await _unitOfWork.AddressRepository.GetQuery(s=>s.IsDeleted==false, true, true);
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 addressQuery = addressQuery.Where(s => s.City.Contains(searchQuery) || s.Country.Contains(searchQuery));
+            }
+            if(!string.IsNullOrWhiteSpace(appUserId))
+            {
+                var existedUserWithGivenId =await _userManager.FindByIdAsync(appUserId);
+                if (existedUserWithGivenId is null)
+                    return Result<PaginationDto<AddressListItemDto>>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
+                addressQuery=addressQuery.Where(s=>s.AppUserId==existedUserWithGivenId.Id);
+
             }
             addressQuery = addressQuery.OrderByDescending(s => s.CreatedTime);
             var paginationResult = await PaginationDto<AddressListItemDto>.Create(

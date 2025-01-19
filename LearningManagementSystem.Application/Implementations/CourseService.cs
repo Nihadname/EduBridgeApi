@@ -88,7 +88,7 @@ namespace LearningManagementSystem.Application.Implementations
         {
             var existedCourseResult = await GetCourseById(id);
             var existedCourse = existedCourseResult.Data;
-            if (existedCourse.IsDeleted is true) Result<string>.Failure("Course", "this already existed",ErrorType.BusinessLogicError);
+            if (existedCourse.IsDeleted is true) return Result<string>.Failure("Course", "this already existed",ErrorType.BusinessLogicError);
             existedCourse.IsDeleted = true;
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted");
@@ -98,7 +98,7 @@ namespace LearningManagementSystem.Application.Implementations
             var existedCourseResult = await GetCourseById(id);
             var existedCourse=existedCourseResult.Data;
            var deletingStatus =await _photoOrVideoService.DeleteMediaAsync(existedCourse.ImageUrl, ResourceType.Image);
-            if (deletingStatus != "deleted") Result<string>.Failure(null, "Error with deleting",ErrorType.SystemError);
+            if (deletingStatus != "deleted")return Result<string>.Failure(null, "Error with deleting",ErrorType.SystemError);
       await _unitOfWork.CourseRepository.Delete(existedCourse);
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted");

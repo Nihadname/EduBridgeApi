@@ -1,6 +1,7 @@
 ﻿using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
+using LearningManagementSystem.Core.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,10 @@ namespace LearningManagementSystem.Application.Interfaces
 {
     public interface IAuthService
     {
-         Task<UserGetDto> RegisterForStudent(RegisterDto registerDto);
-        Task<UserGetDto> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto);
-        Task<AuthResponseDto> Login(LoginDto loginDto);
-        Task<UserGetDto> RegisterForParent(ParentRegisterDto parentRegisterDto);
+        Task<Result<UserGetDto>> RegisterForStudent(RegisterDto registerDto);
+        Task<Result<UserGetDto>> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto);
+        Task<Result<AuthResponseDto>> Login(LoginDto loginDto);
+        Task<Result<UserGetDto>> RegisterForParent(ParentRegisterDto parentRegisterDto);
         Task<string> UpdateImage(UserUpdateImageDto userUpdateImageDto);
         Task<string> ChangePassword(ChangePasswordDto changePasswordDto);
         Task<ResetPasswordEmailDto> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto);
@@ -22,7 +23,7 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<string> Delete(string id);
         Task<string> GetUserName();
         Task<UserGetDto> Profile();
-        Task<string> SendVerificationCode(string email);
+        Task<Result<string>> SendVerificationCode(string email);
         Task<string> VerifyCode(VerifyCodeDto verifyCodeDto);
     }
 }

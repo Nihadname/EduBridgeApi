@@ -9,6 +9,7 @@ using LearningManagementSystem.Application.Helpers.Enums;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Core.Entities;
+using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data;
 using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
@@ -48,18 +49,10 @@ namespace LearningManagementSystem.Application.Implementations
             _cache = cache;
         }
 
-        public async Task<UserGetDto> RegisterForStudent(RegisterDto registerDto)
+        public async Task<Result<UserGetDto>> RegisterForStudent(RegisterDto registerDto)
         {
-            var appUser = await CreateUser(registerDto);
+            var appUser = (await CreateUser(registerDto)).Data;
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
-            var customerOptions = new CustomerCreateOptions
-            {
-                Email = appUser.Email,
-                Name = appUser.UserName
-            };
-            var service = new CustomerService();
-            var stripeCustomer = await service.CreateAsync(customerOptions);
-            appUser.CustomerId=stripeCustomer.Id;
             await _userManager.UpdateAsync(appUser);
             var Student = new Student();
             Student.AvarageScore= null;
@@ -69,23 +62,23 @@ namespace LearningManagementSystem.Application.Implementations
            await _unitOfWork.Commit();
            
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
-            return MappedUser;
+            return Result<UserGetDto>.Success(MappedUser);
         }
 
-        public async Task<UserGetDto> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto)
+        public async Task<Result<UserGetDto>> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto)
         {
-          var appUser= await CreateUser(teacherRegistrationDto.Register);
+          var appUser=( await CreateUser(teacherRegistrationDto.Register)).Data;
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Teacher.ToString());
             teacherRegistrationDto.Teacher.AppUserId=appUser.Id;
             var MappedTeacher = _mapper.Map<Teacher>(teacherRegistrationDto.Teacher);
             await _unitOfWork.TeacherRepository.Create(MappedTeacher);
             await _unitOfWork.Commit();
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
-            return MappedUser;
+            return Result<UserGetDto>.Success(MappedUser);
         }
-        public async Task<UserGetDto> RegisterForParent(ParentRegisterDto  parentRegisterDto)
+        public async Task<Result<UserGetDto>> RegisterForParent(ParentRegisterDto  parentRegisterDto)
         {
-            var appUser = await CreateUser(parentRegisterDto.Register);
+            var appUser =( await CreateUser(parentRegisterDto.Register)).Data;
             await _roleManager.CreateAsync(new IdentityRole(RolesEnum.Parent.ToString()));
 
             await _userManager.AddToRoleAsync(appUser, RolesEnum.Parent.ToString());
@@ -104,7 +97,7 @@ namespace LearningManagementSystem.Application.Implementations
                     }
                     else
                     {
-                        throw new CustomException(400, "StudentId", "the choosen student  doesnt exist");
+                        return Result<UserGetDto>.Failure("StudentId", "the choosen student  doesnt exist", ErrorType.NotFoundError);
                     }
                 }
                 MappedParent.Students = Students;
@@ -113,9 +106,9 @@ namespace LearningManagementSystem.Application.Implementations
             await _unitOfWork.ParentRepository.Create(MappedParent);
             await _unitOfWork.Commit();
             var MappedUser = _mapper.Map<UserGetDto>(appUser);
-            return MappedUser;
+            return Result<UserGetDto>.Success(MappedUser);
         }
-        private async Task<AppUser> CreateUser(RegisterDto registerDto)
+        private async Task<Result<AppUser>> CreateUser(RegisterDto registerDto)
         {
             var existUser = await _userManager.FindByNameAsync(registerDto.UserName);
             if (existUser != null) throw new CustomException(400, "UserName", "UserName is already Taken");
@@ -123,13 +116,11 @@ namespace LearningManagementSystem.Application.Implementations
             if (existUserEmail != null) throw new CustomException(400, "Email", "Email is already taken");
             if (await _context.Users.FirstOrDefaultAsync(s => s.PhoneNumber.ToLower() == registerDto.PhoneNumber.ToLower()) is not null)
             {
-                throw new CustomException(400, "PhoneNumber", "PhoneNumber already exists ");
-
+                return Result<AppUser>.Failure("PhoneNumber", "PhoneNumber already exists", ErrorType.BusinessLogicError);
             }
             if (DateTime.Now.Year - registerDto.BirthDate.Year <15)
             {
-                throw new CustomException(400, "BirthDate", "Student can not be younger than 15  ");
-
+                return Result<AppUser>.Failure("BirthDate", "Student can not be younger than 15", ErrorType.BusinessLogicError);
             }
             AppUser appUser = new AppUser();
             appUser.UserName = registerDto.UserName;
@@ -151,6 +142,14 @@ namespace LearningManagementSystem.Application.Implementations
 
                 throw new CustomException(400, errorMessages);
             }
+            var customerOptions = new CustomerCreateOptions
+            {
+                Email = appUser.Email,
+                Name = appUser.UserName
+            };
+            var service = new CustomerService();
+            var stripeCustomer = await service.CreateAsync(customerOptions);
+            appUser.CustomerId = stripeCustomer.Id;
             var ExistedRequestRegister = await _unitOfWork.RequstToRegisterRepository.GetEntity(s => s.Email == appUser.Email);
             if (ExistedRequestRegister != null)
             {
@@ -174,13 +173,13 @@ namespace LearningManagementSystem.Application.Implementations
                ));
             }
             await SendVerificationCode(appUser.Email);
-            return appUser;
+            return Result<AppUser>.Success(appUser);
         }
-        public async Task<string> SendVerificationCode(string email)
+        public async Task<Result<string>> SendVerificationCode(string email)
         {
-            if (string.IsNullOrEmpty(email)) throw new CustomException(400, "email", "email is null");
+            if (string.IsNullOrEmpty(email)) return Result<string>.Failure("email", "email is null", ErrorType.ValidationError);
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) throw new CustomException(400, "user", "user is null");
+            if (user is null) return Result<string>.Failure("user", "user is null", ErrorType.NotFoundError);
             var verificationCode = new Random().Next(100000, 999999).ToString();
             string salt;
             string hashedCode=verificationCode.GenerateHash(out salt);
@@ -201,7 +200,7 @@ namespace LearningManagementSystem.Application.Implementations
                 "nihadcoding@gmail.com",
                 "gulzclohfwjelppj"
             ));
-            return "Verification code sent";
+            return Result<string>.Success("Verification code sent");
         }
         public async Task<string> VerifyCode(VerifyCodeDto verifyCodeDto)
         {
@@ -217,7 +216,7 @@ namespace LearningManagementSystem.Application.Implementations
             await _userManager.UpdateAsync(existedUser);
             return "Code verified successfully. You can now log in.";
             }
-        public async Task<AuthResponseDto> Login(LoginDto loginDto)
+        public async Task<Result<AuthResponseDto>> Login(LoginDto loginDto)
         {
             var User = await _userManager.Users.Include(s=>s.Student).
                 FirstOrDefaultAsync(s=>s.Email.ToLower()==loginDto.UserNameOrGmail.ToLower());
@@ -228,7 +227,7 @@ namespace LearningManagementSystem.Application.Implementations
                     .FirstOrDefaultAsync(s => s.UserName.ToLower() == loginDto.UserNameOrGmail.ToLower());
                 if (User == null)
                 {
-                    throw new CustomException(400, "UserNameOrGmail", "userName or email is wrong\"");
+                    return Result<AuthResponseDto>.Failure("UserNameOrGmail", "userName or email is wrong\"",ErrorType.NotFoundError);
                 }
             }
             if (User.IsFirstTimeLogined)
@@ -253,7 +252,7 @@ namespace LearningManagementSystem.Application.Implementations
 
             if (!result)
             {
-                throw new CustomException(400, "Password", "Password or email is wrong\"");
+                return Result<AuthResponseDto>.Failure("Password", "Password or email is wrong\"", ErrorType.ValidationError);
             }
             
             if (User.IsBlocked && User.BlockedUntil.HasValue)
@@ -266,9 +265,8 @@ namespace LearningManagementSystem.Application.Implementations
                 }
                 else
                 {
-                  
-                   
-                    throw new CustomException(403, "UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}");
+
+                    return Result<AuthResponseDto>.Failure("UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}", ErrorType.BusinessLogicError);
                 }
             }
             IList<string> roles = await _userManager.GetRolesAsync(User);
@@ -286,19 +284,17 @@ namespace LearningManagementSystem.Application.Implementations
             //}
             if (User.IsReportedHighly)
             {
-                throw new CustomException(400, "User", "You are reported too many times ,so account is locked now, we will contact with you");
+                return Result<AuthResponseDto>.Failure("User", "You are reported too many times ,so account is locked now, we will contact with you", ErrorType.BusinessLogicError);
             }
-            if (!User.IsEmailVerificationCodeValid) throw new CustomException(400, "User", "pls verify your account by getting code");
-
-            
+            if (!User.IsEmailVerificationCodeValid) return Result<AuthResponseDto>.Failure("User", "pls verify your account by getting code", ErrorType.BusinessLogicError);
             var Audience = _jwtSettings.Audience;
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
-            return new AuthResponseDto
+            return Result<AuthResponseDto>.Success(new AuthResponseDto
             {
                 IsSuccess = true,
                 Token = tokenService.GetToken(SecretKey, Audience, Issuer, User, roles)
-            };
+            });
                 
         }
         public async Task<string> UpdateImage(UserUpdateImageDto userUpdateImageDto)

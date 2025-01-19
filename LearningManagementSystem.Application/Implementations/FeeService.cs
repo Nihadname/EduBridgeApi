@@ -228,9 +228,8 @@ namespace LearningManagementSystem.Application.Implementations
             if(LatestFee.PaymentStatus==PaymentStatus.Paid)
               return  Result<bool>.Success(true);
             else
-            {
                 return Result<bool>.Success(false);
-            }
+          
 
         }
         public async Task<Result<PaginationDto<FeeListItemDto>>> GetAllOfUsersFees(DateTime? startPaidDate=null, DateTime? endPaidDateTime=null, int pageNumber = 1,
