@@ -1,5 +1,7 @@
 ﻿using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Features.Commands.Course.Create;
+using LearningManagementSystem.Application.Features.Commands.Course.Delete;
+using LearningManagementSystem.Application.Features.Commands.Course.DeleteFromUi;
 using LearningManagementSystem.Application.Features.Commands.Course.Update;
 using LearningManagementSystem.Application.Interfaces;
 using MediatR;
@@ -44,19 +46,21 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         //{
         //    return Ok(await _courseService.GetById(id));
         //}
-        //[HttpDelete("Ui/{id}")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        //public async Task<IActionResult> DeleteFromUi(Guid id)
-        //{
-        //    return Ok(await _courseService.DeleteFromUi(id));
-        //}
-        //[HttpDelete("{id}")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpDelete("Ui/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> DeleteFromUi(DeleteFromUiCourseCommand deleteFromUiCourseCommand)
+        {
+            var result = await _mediator.Send(deleteFromUiCourseCommand);
+            return Ok(result);
+        }
+        [HttpDelete("{id}")]
+       [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 
-        //public async Task<IActionResult>  Delete(Guid id)
-        //{
-        //    return Ok(await _courseService.Delete(id));
-        //}
+        public async Task<IActionResult>  Delete(DeleteCourseCommand deleteCourseCommand)
+        {
+            var result=await _mediator.Send(deleteCourseCommand);
+           return Ok(result);
+        }
         //[HttpGet("GetAll")]
         //public async Task<IActionResult> GetAll([FromQuery] List<Guid> TeacherIds, int pageNumber = 1,
         //   int pageSize = 10,
