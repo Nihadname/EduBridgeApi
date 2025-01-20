@@ -1,4 +1,5 @@
-﻿using LearningManagementSystem.Core.Entities;
+﻿using LearningManagementSystem.Application.Features.Commands.Course.Create;
+using LearningManagementSystem.Core.Entities;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,11 @@ namespace LearningManagementSystem.Application.Dtos.Course
         public decimal Price { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+
+        public static explicit operator CourseCreateDto(CreateCourseCommand v)
+        {
+            throw new NotImplementedException();
+        }
     }
     public enum Language
     {

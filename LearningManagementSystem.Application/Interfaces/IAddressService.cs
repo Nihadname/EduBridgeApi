@@ -12,7 +12,7 @@ namespace LearningManagementSystem.Application.Interfaces
     {
         Task<Result<AddressReturnDto>> Create(AddressCreateDto addressCreateDto);
         Task<Result<string>> DeleteForUser(Guid id);
-        Task<Result<PaginationDto<AddressListItemDto>>> GetAll(int pageNumber = 1,
-           int pageSize = 10, string searchQuery = null);
+        Task<Result<PaginationDto<AddressListItemDto>>> GetAll(string appUserId = null, int pageNumber = 1,
+              int pageSize = 10, string searchQuery = null);
     }
 }

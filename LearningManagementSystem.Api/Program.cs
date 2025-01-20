@@ -2,6 +2,7 @@ using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Hangfire;
+
 using LearningManagementSystem.Api;
 using LearningManagementSystem.Api.Middlewares;
 using LearningManagementSystem.Application.Exceptions;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Stripe;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -90,6 +92,7 @@ builder.Services.AddHostedService<FeeProcessing>();
 var stripeSettings = builder.Configuration.GetSection("Stripe");
 StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 //var excludedPaths = builder.Configuration.GetSection("ExcludedPaths").Get<string[]>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.Load("LearningManagementSystem.Application")));
 
 var app = builder.Build();
 

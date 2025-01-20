@@ -1,9 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
-using LearningManagementSystem.Application.Implementations;
-using LearningManagementSystem.Application.Interfaces;
-using LearningManagementSystem.Application.Profiles;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Application.Validators.AuthValidators;
 using LearningManagementSystem.Core.Entities;
@@ -17,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
