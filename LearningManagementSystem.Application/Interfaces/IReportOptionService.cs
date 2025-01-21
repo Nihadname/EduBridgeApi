@@ -1,9 +1,10 @@
 ﻿using LearningManagementSystem.Application.Dtos.ReportOption;
+using LearningManagementSystem.Core.Entities.Common;
 
 namespace LearningManagementSystem.Application.Interfaces
 {
     public interface IReportOptionService
     {
-        Task<ReportOptionReturnDto> Create(ReportOptionCreateDto reportOptionCreateDto);
+        Task<Result<ReportOptionReturnDto>> Create(ReportOptionCreateDto reportOptionCreateDto);
     }
 }

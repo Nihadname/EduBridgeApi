@@ -382,33 +382,31 @@ namespace LearningManagementSystem.Application.Implementations
             return "hasnt still expired";
 
         }
-        public async Task<string> Delete(string id)
+        public async Task<Result<string>> Delete(string id)
         {
             if (string.IsNullOrWhiteSpace(id)|| id is null)
             {
-                throw new CustomException(400, "Id", "Id can not be null");
-
+                return Result<string>.Failure("Id", "Id can not be null", ErrorType.ValidationError);
             }
             var existedUser = await _userManager.Users
      .Include(u => u.Teacher) 
      .FirstOrDefaultAsync(u => u.Id == id);
             if (existedUser is null)
             {
-                throw new CustomException(400, "User", "User can not be null");
+                return Result<string>.Failure("User", "User can not be null", ErrorType.NotFoundError);
             }
             if(existedUser.Teacher is not null)
             {
                 var existedTeacher = await _unitOfWork.TeacherRepository.GetEntity(s => s.AppUserId == existedUser.Id);
                 if(existedTeacher is null)
                 {
-                    throw new CustomException(400, "Teacher", "Teacher can not be null");
-
+                    return Result<string>.Failure("User", "User can not be null",ErrorType.NotFoundError);
                 }
                 await _unitOfWork.TeacherRepository.Delete(existedTeacher);
                 await _unitOfWork.Commit();
             }
             await _userManager.DeleteAsync(existedUser);
-            return existedUser.Id;
+            return Result<string>.Success(existedUser.Id);
         }
         private async Task<AppUser> GetUserByEmailAsync(string email)
         {
@@ -424,33 +422,37 @@ namespace LearningManagementSystem.Application.Implementations
             }
             return user;
         }
-        public async Task<string> GetUserName()
+        public async Task<Result<string>> GetUserName()
         {
-            var user = await GetUserWithIdInTheSystem();
-            return user.UserName;
+            var user =( await GetUserWithIdInTheSystem()).Data;
+            return Result<string>.Success(user.UserName);
         }
-        public async Task<UserGetDto> Profile()
+        public async Task<Result<UserGetDto>> Profile()
         {
-        var existedUser = await GetUserWithIdInTheSystem();
+            var userResult = await GetUserWithIdInTheSystem();
+            if(!userResult.IsSuccess) return Result<UserGetDto>.Failure(userResult.ErrorKey,userResult.Message, (ErrorType)userResult.ErrorType);
+        var existedUser = userResult.Data;
+            
             var mappedUser=_mapper.Map<UserGetDto>(existedUser);
-            return mappedUser;
+            return Result<UserGetDto>.Success(mappedUser);
         }
-        private async Task<AppUser> GetUserWithIdInTheSystem()
+        private async Task<Result<AppUser>> GetUserWithIdInTheSystem()
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                throw new CustomException(400, "Id", "User ID cannot be null");
+                return Result<AppUser>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
             var cacheKey = $"AppUser_{userId}";
-            var cachedNote = await _cache.GetOrSetAsync<AppUser>(cacheKey, async _ =>
+            var cachedNote = await _cache.GetOrSetAsync<Result<AppUser>>(cacheKey, async _ =>
             {
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
-                    if (user is null) throw new CustomException(403, "this user doesnt exist");
+                    if (user is null) return Result<AppUser>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+
                 }
-                return user;
+                return Result<AppUser>.Success(user);
             });
             
             return cachedNote;    

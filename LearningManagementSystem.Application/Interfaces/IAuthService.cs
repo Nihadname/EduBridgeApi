@@ -20,9 +20,9 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<Result<string>> ChangePassword(ChangePasswordDto changePasswordDto);
          Task<Result<ResetPasswordEmailDto>> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto);
         Task<Result<string>> ResetPassword(ResetPasswordHandleDto resetPasswordHandleDto);
-        Task<string> Delete(string id);
-        Task<string> GetUserName();
-        Task<UserGetDto> Profile();
+        Task<Result<string>> Delete(string id);
+        Task<Result<string>> GetUserName();
+        Task<Result<UserGetDto>> Profile();
         Task<Result<string>> SendVerificationCode(string email);
         Task<Result<string>> VerifyCode(VerifyCodeDto verifyCodeDto);
     }

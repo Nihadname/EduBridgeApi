@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystem.Application.Dtos.Report;
+using LearningManagementSystem.Core.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace LearningManagementSystem.Application.Interfaces
     {
         Task<ReportReturnDto> Create(ReportCreateDto reportCreateDto);
         Task<string> VerifyReport(Guid id);
-        Task<string> DeleteForUser(Guid id);
-        Task<string> DeleteForAdmin(Guid id);
+        Task<Result<string>> DeleteForUser(Guid id);
+        Task<Result<string>> DeleteForAdmin(Guid id);
     }
 }

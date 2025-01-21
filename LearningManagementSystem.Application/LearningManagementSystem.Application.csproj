@@ -22,8 +22,5 @@
   <ItemGroup>
     <ProjectReference Include="..\LearningManagementSystem.DataAccess\LearningManagementSystem.DataAccess.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Features\Queries\" />
-  </ItemGroup>
 
 </Project>

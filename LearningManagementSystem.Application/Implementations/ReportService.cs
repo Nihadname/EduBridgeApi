@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet.Actions;
 using Hangfire;
+using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Report;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
 using LearningManagementSystem.Core.Entities;
+using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.DataAccess.Data.Implementations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -116,35 +119,39 @@ namespace LearningManagementSystem.Application.Implementations
                ));
             return "Approved By Admin";
         }
-        public async Task<string> DeleteForUser(Guid id)
+        public async Task<Result<string>> DeleteForUser(Guid id)
         {
-            var userReport = await GetUserReport(id);
-            userReport.IsDeleted = true;
-            await _unitOfWork.ReportRepository.Update(userReport);
+            var userReportResult = await GetUserReport(id);
+            if (!userReportResult.IsSuccess) return Result<string>.Failure(userReportResult.ErrorKey, userReportResult.Message, (ErrorType)userReportResult.ErrorType);
+            userReportResult.Data.IsDeleted = true;
+            await _unitOfWork.ReportRepository.Update(userReportResult.Data);
             await _unitOfWork.Commit();
-            return "Deleted";
+            return Result<string>.Success("Deleted");
         }
-        public async Task<string> DeleteForAdmin(Guid id)
+        public async Task<Result<string>> DeleteForAdmin(Guid id)
         {
-         var userReport=   await GetUserReport(id);
-            await _unitOfWork.ReportRepository.Delete(userReport);  
+         var userReportResult=   await GetUserReport(id);
+            if (!userReportResult.IsSuccess) return Result<string>.Failure(userReportResult.ErrorKey, userReportResult.Message, (ErrorType)userReportResult.ErrorType);
+
+            await _unitOfWork.ReportRepository.Delete(userReportResult.Data);  
             await _unitOfWork.Commit();
-            return "Deleted By Admin";
+            return Result<string>.Success("Deleted by Admin");
         }
-        private async Task<Report> GetUserReport(Guid id)
+        private async Task<Result<Report>> GetUserReport(Guid id)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new CustomException(400, "Id", "User ID cannot be null");
+                return Result<Report>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
             if (id == Guid.Empty)
             {
-                throw new CustomException(440, "Invalid GUID provided.");
+                return Result<Report>.Failure("Id", "Invalid GUID provided.", ErrorType.ValidationError);
+
             }
             var existedReport = await _unitOfWork.ReportRepository.GetEntity(s => s.Id == id && s.AppUserId == userId && s.IsDeleted == false);
             if (existedReport is null) throw new CustomException(400, "existedReport", "existedReport  not found");
-            return existedReport;
+            return Result<Report>.Success(existedReport);
         }
     }
 }

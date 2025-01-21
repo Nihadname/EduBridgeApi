@@ -43,9 +43,9 @@ namespace LearningManagementSystem.Api.App.ClientSide
             return Ok(result);
         }
         [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword(string email, string token, ResetPasswordDto resetPasswordDto)
+        public async Task<IActionResult> ResetPassword(ResetPasswordHandleDto resetPasswordHandleDto)
         {
-            return Ok(await _authService.ResetPassword(email, token, resetPasswordDto));
+            return Ok(await _authService.ResetPassword(resetPasswordHandleDto));
         }
         [HttpGet("CheckAuth")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
