@@ -3,6 +3,7 @@ using LearningManagementSystem.Application.Features.Commands.Course.Create;
 using LearningManagementSystem.Application.Features.Commands.Course.Delete;
 using LearningManagementSystem.Application.Features.Commands.Course.DeleteFromUi;
 using LearningManagementSystem.Application.Features.Commands.Course.Update;
+using LearningManagementSystem.Application.Features.Queries.GetMethods;
 using LearningManagementSystem.Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,13 +40,14 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
             var result=await _mediator.Send(updateCourseCommand);
             return Ok(result);
         }
-        //[HttpGet("{id}")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpGet("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 
-        //public async Task<IActionResult> Get(Guid id)
-        //{
-        //    return Ok(await _courseService.GetById(id));
-        //}
+        public async Task<IActionResult> Get(GetCourseByIdQuery getCourseByIdQuery)
+        {
+            var result=await _mediator.Send(getCourseByIdQuery);
+            return Ok(result);
+        }
         [HttpDelete("Ui/{id}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> DeleteFromUi(DeleteFromUiCourseCommand deleteFromUiCourseCommand)
@@ -61,12 +63,11 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
             var result=await _mediator.Send(deleteCourseCommand);
            return Ok(result);
         }
-        //[HttpGet("GetAll")]
-        //public async Task<IActionResult> GetAll([FromQuery] List<Guid> TeacherIds, int pageNumber = 1,
-        //   int pageSize = 10,
-        //   string searchQuery = null)
-        //{
-        //    return Ok(await _courseService.GetAll(TeacherIds,pageNumber, pageSize, searchQuery));  
-        //}
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAll(GetAllCourseQuery getAllCourseQuery)
+        {
+            var result=await _mediator.Send(getAllCourseQuery);
+            return Ok(result);  
+        }
     }
 }
