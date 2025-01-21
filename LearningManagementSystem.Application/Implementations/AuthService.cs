@@ -202,19 +202,18 @@ namespace LearningManagementSystem.Application.Implementations
             ));
             return Result<string>.Success("Verification code sent");
         }
-        public async Task<string> VerifyCode(VerifyCodeDto verifyCodeDto)
+        public async Task<Result<string>> VerifyCode(VerifyCodeDto verifyCodeDto)
         {
             var existedUser=await _userManager.FindByEmailAsync(verifyCodeDto.Email);
-            if (existedUser is null) throw new CustomException(404, "User", "User is null");
+            if (existedUser is null) return Result<string>.Failure("User", "User is null", ErrorType.NotFoundError);
             bool isValid = HashExtension.VerifyHash(verifyCodeDto.Code,existedUser.Salt, existedUser.VerificationCode);
-
-            if (!isValid || existedUser.ExpiredDate < DateTime.UtcNow) 
-                throw new CustomException(400,"Code","Invalid or expired verification code.");
+            if (!isValid || existedUser.ExpiredDate < DateTime.UtcNow)
+               return Result<string>.Failure("Code", "Invalid or expired verification code.", ErrorType.BusinessLogicError);
             existedUser.IsEmailVerificationCodeValid = true;
             existedUser.VerificationCode = null;
             existedUser.ExpiredDate = null;
             await _userManager.UpdateAsync(existedUser);
-            return "Code verified successfully. You can now log in.";
+            return Result<string>.Success("Code verified successfully. You can now log in.");
             }
         public async Task<Result<AuthResponseDto>> Login(LoginDto loginDto)
         {
@@ -297,34 +296,35 @@ namespace LearningManagementSystem.Application.Implementations
             });
                 
         }
-        public async Task<string> UpdateImage(UserUpdateImageDto userUpdateImageDto)
+        public async Task<Result<string>> UpdateImage(UserUpdateImageDto userUpdateImageDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                throw new CustomException(400, "Id", "User ID cannot be null");
+                return Result<string>.Failure("Id", "User Id cannot be null",ErrorType.UnauthorizedError);
             }
             var user = await _userManager.FindByIdAsync(userId);
-            if (user is null) throw new CustomException(403, "this user doesnt exist");
+            if (user is null)
+                return Result<string>.Failure("Id", "this user doesnt exist", ErrorType.UnauthorizedError);
             if (!string.IsNullOrEmpty(user.Image))
             {
                 user.Image.DeleteFile();
             }
             user.Image = userUpdateImageDto.Image.Save(Directory.GetCurrentDirectory(), "img");
             await _userManager.UpdateAsync(user);
-            return user.Image;
+            return Result<string>.Success(user.Image);
         }
-        public async Task<string> ChangePassword(ChangePasswordDto changePasswordDto)
+        public async Task<Result<string>> ChangePassword(ChangePasswordDto changePasswordDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                throw new CustomException(400, "Id", "User ID cannot be null");
+                return  Result<string>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user is null)
             {
-                throw new CustomException(404, "Id", "User  not found");
+                return Result<string>.Failure("Id", "this user doesnt exist", ErrorType.UnauthorizedError);
             }
             var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (!result.Succeeded)
@@ -332,41 +332,34 @@ namespace LearningManagementSystem.Application.Implementations
                 var errorMessages = result.Errors.ToDictionary(e => e.Code, e => e.Description);
                 throw new CustomException(400, errorMessages);
             }
-            return result.ToString();
+            return Result<string>.Success(result.ToString());
         }
-        public async Task<ResetPasswordEmailDto> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto)
+        public async Task<Result<ResetPasswordEmailDto>> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto)
         {
             if (string.IsNullOrEmpty(resetPasswordEmailDto.Email))
             {
-                throw new CustomException(400, "Email is required.");
+                return Result<ResetPasswordEmailDto>.Failure(null, "Email is required.",ErrorType.ValidationError);
             }
             var user = await GetUserByEmailAsync(resetPasswordEmailDto.Email);
             
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             resetPasswordEmailDto.Token = token;
-            return resetPasswordEmailDto;
+            return Result<ResetPasswordEmailDto>.Success(resetPasswordEmailDto);
         }
-        public async Task<string> ResetPassword(string email, string token,ResetPasswordDto resetPasswordDto)
+        public async Task<Result<string>> ResetPassword(ResetPasswordHandleDto resetPasswordHandleDto)
         {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                throw new CustomException(400,"Email", "Email is required.");
-            }
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new CustomException(400,"token", "token is reqeuired.");
-            }
-            await CheckExperySutiationOfToken(email, token);
-            var existedUser = await GetUserByEmailAsync(email);
-            var isNewOrCurrentPassword = await _userManager.CheckPasswordAsync(existedUser, resetPasswordDto.Password);
+           
+            await CheckExperySutiationOfToken(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token);
+            var existedUser = await GetUserByEmailAsync(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email);
+            var isNewOrCurrentPassword = await _userManager.CheckPasswordAsync(existedUser, resetPasswordHandleDto.resetPasswordDto.Password);
             if (isNewOrCurrentPassword)
             {
-                throw new CustomException(400,"Password", "You cannot use your previous password.");
+                Result<string>.Failure("Password", "You cannot use your previous password.", ErrorType.BusinessLogicError);
             }
-            var result = await _userManager.ResetPasswordAsync(existedUser, token, resetPasswordDto.Password);
+            var result = await _userManager.ResetPasswordAsync(existedUser, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token, resetPasswordHandleDto.resetPasswordDto.Password);
             if (!result.Succeeded) throw new CustomException(400, result.Errors.ToString());
             await _userManager.UpdateSecurityStampAsync(existedUser);
-            return "password Reseted";
+            return Result<string>.Success("password Reseted");
 
         }
         public async Task<string> CheckExperySutiationOfToken(string email, string token)

@@ -16,14 +16,14 @@ namespace LearningManagementSystem.Application.Interfaces
         Task<Result<UserGetDto>> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto);
         Task<Result<AuthResponseDto>> Login(LoginDto loginDto);
         Task<Result<UserGetDto>> RegisterForParent(ParentRegisterDto parentRegisterDto);
-        Task<string> UpdateImage(UserUpdateImageDto userUpdateImageDto);
-        Task<string> ChangePassword(ChangePasswordDto changePasswordDto);
-        Task<ResetPasswordEmailDto> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto);
-        Task<string> ResetPassword(string email, string token, ResetPasswordDto resetPasswordDto);
+        Task<Result<string>> UpdateImage(UserUpdateImageDto userUpdateImageDto);
+        Task<Result<string>> ChangePassword(ChangePasswordDto changePasswordDto);
+         Task<Result<ResetPasswordEmailDto>> ResetPasswordSendEmail(ResetPasswordEmailDto resetPasswordEmailDto);
+        Task<Result<string>> ResetPassword(ResetPasswordHandleDto resetPasswordHandleDto);
         Task<string> Delete(string id);
         Task<string> GetUserName();
         Task<UserGetDto> Profile();
         Task<Result<string>> SendVerificationCode(string email);
-        Task<string> VerifyCode(VerifyCodeDto verifyCodeDto);
+        Task<Result<string>> VerifyCode(VerifyCodeDto verifyCodeDto);
     }
 }
