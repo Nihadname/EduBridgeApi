@@ -61,8 +61,11 @@ namespace LearningManagementSystem.Application.Implementations
                         File = new FileDescription(file.FileName, stream),
                         Transformation = new Transformation().Width(500).Height(500).Crop("fill").Quality("auto").FetchFormat("auto") // Adjust for videos
                     };
+                    
+                   
+                        uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-                    uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                   
                 }
                 else
                 {
@@ -72,7 +75,10 @@ namespace LearningManagementSystem.Application.Implementations
                         Transformation = new Transformation().Width(500).Height(500).Crop("fill").Quality("auto").FetchFormat("auto") // Adjust for videos
                     };
 
-                    uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                    
+                        uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+                   
                 }
 
 
@@ -99,13 +105,19 @@ namespace LearningManagementSystem.Application.Implementations
     
         private async Task<string> ExtractPublicIdFromUrl(string url)
         {
-            Uri uri = new Uri(url);
-            string[] segments = uri.Segments;
+            try
+            {
+                Uri uri = new Uri(url);
+                string path = uri.AbsolutePath;
+                string publicId = path.Split('/').Last().Split('.')[0];
 
-            string lastSegment = segments[^1];
-            string publicId = lastSegment.Substring(0, lastSegment.LastIndexOf('.'));
+                return publicId;
+            }
+            catch
+            {
+                throw new CustomException(400, "Invalid URL", "Could not extract public ID from URL");
+            }
 
-            return publicId;
         }
     }
 }

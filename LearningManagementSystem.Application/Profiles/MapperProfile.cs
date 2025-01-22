@@ -38,7 +38,6 @@ namespace LearningManagementSystem.Application.Profiles
                        _contextAccessor.HttpContext.Request.Host.Port ?? 80).Uri.AbsoluteUri
       : "https://defaulturl.com/";
             CreateMap<AppUser, UserGetDto>()
-               .ForMember(s => s.Image, map => map.MapFrom(d => url + "img/" + d.Image))
              .ForMember(s => s.PhoneNumber, map => map.MapFrom(d => d.PhoneNumber));
             CreateMap<TeacherCreateDto, Teacher>();
             CreateMap<ParentCreateDto, Parent>();

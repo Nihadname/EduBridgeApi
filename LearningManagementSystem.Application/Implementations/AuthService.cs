@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet.Actions;
 using Hangfire;
+using LearningManagementSystem.Application.AppDefaults;
 using LearningManagementSystem.Application.Dtos.Auth;
 using LearningManagementSystem.Application.Dtos.Parent;
 using LearningManagementSystem.Application.Dtos.Teacher;
@@ -17,6 +19,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Stripe;
+using System.Collections.Generic;
 using System.Security.Claims;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -35,7 +38,8 @@ namespace LearningManagementSystem.Application.Implementations
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
         private readonly IFusionCache _cache;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IHttpContextAccessor contextAccessor, IFusionCache cache)
+        private readonly IPhotoOrVideoService _photoOrVideoService;
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ApplicationDbContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IHttpContextAccessor contextAccessor, IFusionCache cache, IPhotoOrVideoService photoOrVideoService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -47,42 +51,46 @@ namespace LearningManagementSystem.Application.Implementations
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
             _cache = cache;
+            _photoOrVideoService = photoOrVideoService;
         }
 
         public async Task<Result<UserGetDto>> RegisterForStudent(RegisterDto registerDto)
         {
-            var appUser = (await CreateUser(registerDto)).Data;
-            await _userManager.AddToRoleAsync(appUser, RolesEnum.Student.ToString());
-            await _userManager.UpdateAsync(appUser);
+            var appUserResult = await CreateUser(registerDto);
+            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, (ErrorType)appUserResult.ErrorType);
+
+            await _userManager.AddToRoleAsync(appUserResult.Data, RolesEnum.Student.ToString());
+            await _userManager.UpdateAsync(appUserResult.Data);
             var Student = new Student();
             Student.AvarageScore= null;
-            Student.AppUserId=appUser.Id;
+            Student.AppUserId= appUserResult.Data.Id;
             Student.IsEnrolled=false;
             await _unitOfWork.StudentRepository.Create(Student);
            await _unitOfWork.Commit();
            
-            var MappedUser = _mapper.Map<UserGetDto>(appUser);
+            var MappedUser = _mapper.Map<UserGetDto>(appUserResult.Data);
             return Result<UserGetDto>.Success(MappedUser);
         }
 
         public async Task<Result<UserGetDto>> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto)
         {
-          var appUser=( await CreateUser(teacherRegistrationDto.Register)).Data;
-            await _userManager.AddToRoleAsync(appUser, RolesEnum.Teacher.ToString());
-            teacherRegistrationDto.Teacher.AppUserId=appUser.Id;
+            var appUserResult = await CreateUser(teacherRegistrationDto.Register);
+            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, (ErrorType)appUserResult.ErrorType);
+            await _userManager.AddToRoleAsync(appUserResult.Data, RolesEnum.Teacher.ToString());
+            teacherRegistrationDto.Teacher.AppUserId=appUserResult.Data.Id;
             var MappedTeacher = _mapper.Map<Teacher>(teacherRegistrationDto.Teacher);
             await _unitOfWork.TeacherRepository.Create(MappedTeacher);
             await _unitOfWork.Commit();
-            var MappedUser = _mapper.Map<UserGetDto>(appUser);
+            var MappedUser = _mapper.Map<UserGetDto>(appUserResult.Data);
             return Result<UserGetDto>.Success(MappedUser);
         }
         public async Task<Result<UserGetDto>> RegisterForParent(ParentRegisterDto  parentRegisterDto)
         {
-            var appUser =( await CreateUser(parentRegisterDto.Register)).Data;
-            await _roleManager.CreateAsync(new IdentityRole(RolesEnum.Parent.ToString()));
+            var appUserResult = await CreateUser(parentRegisterDto.Register);
+            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, (ErrorType)appUserResult.ErrorType); await _roleManager.CreateAsync(new IdentityRole(RolesEnum.Parent.ToString()));
 
-            await _userManager.AddToRoleAsync(appUser, RolesEnum.Parent.ToString());
-            parentRegisterDto.Parent.AppUserId=appUser.Id;
+            await _userManager.AddToRoleAsync(appUserResult.Data, RolesEnum.Parent.ToString());
+            parentRegisterDto.Parent.AppUserId=appUserResult.Data.Id;
             var MappedParent = _mapper.Map<Parent>(parentRegisterDto.Parent);
 
             var Students = new List<Student>();
@@ -105,15 +113,16 @@ namespace LearningManagementSystem.Application.Implementations
             
             await _unitOfWork.ParentRepository.Create(MappedParent);
             await _unitOfWork.Commit();
-            var MappedUser = _mapper.Map<UserGetDto>(appUser);
+            var MappedUser = _mapper.Map<UserGetDto>(appUserResult.Data);
             return Result<UserGetDto>.Success(MappedUser);
         }
         private async Task<Result<AppUser>> CreateUser(RegisterDto registerDto)
         {
             var existUser = await _userManager.FindByNameAsync(registerDto.UserName);
-            if (existUser != null) throw new CustomException(400, "UserName", "UserName is already Taken");
+            if (existUser != null) return Result<AppUser>.Failure("UserName", "UserName is already Taken", ErrorType.BusinessLogicError);
             var existUserEmail = await _userManager.FindByEmailAsync(registerDto.Email);
-            if (existUserEmail != null) throw new CustomException(400, "Email", "Email is already taken");
+            if (existUserEmail != null)
+                return Result<AppUser>.Failure("Email", "Email is already taken", ErrorType.BusinessLogicError);
             if (await _context.Users.FirstOrDefaultAsync(s => s.PhoneNumber.ToLower() == registerDto.PhoneNumber.ToLower()) is not null)
             {
                 return Result<AppUser>.Failure("PhoneNumber", "PhoneNumber already exists", ErrorType.BusinessLogicError);
@@ -127,9 +136,7 @@ namespace LearningManagementSystem.Application.Implementations
             appUser.Email = registerDto.Email;
             appUser.fullName = registerDto.FullName;
             appUser.PhoneNumber = registerDto.PhoneNumber;
-
-            appUser.Image = "user-profile-icon-vector-avatar-600nw-2247726673.webp";
-
+            appUser.Image = AppDefaultValue.DefaultProfileImageUrl;
             appUser.CreatedTime = DateTime.UtcNow;
             appUser.BirthDate = registerDto.BirthDate;
             appUser.IsFirstTimeLogined=true;
@@ -138,9 +145,13 @@ namespace LearningManagementSystem.Application.Implementations
           
             if (!result.Succeeded)
             {
+                string errors=string.Empty;
                 var errorMessages = result.Errors.ToDictionary(e => e.Code, e => e.Description);
-
-                throw new CustomException(400, errorMessages);
+                foreach (KeyValuePair<string, string> keyValues in errorMessages)
+                {
+                    errors += keyValues.Key + " : " + keyValues.Value + ", ";
+                }
+                return Result<AppUser>.Failure(null, errors.TrimEnd(',', ' '), ErrorType.SystemError);
             }
             var customerOptions = new CustomerCreateOptions
             {
@@ -310,7 +321,7 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 user.Image.DeleteFile();
             }
-            user.Image = userUpdateImageDto.Image.Save(Directory.GetCurrentDirectory(), "img");
+            user.Image =await _photoOrVideoService.UploadMediaAsync(userUpdateImageDto.Image, false);
             await _userManager.UpdateAsync(user);
             return Result<string>.Success(user.Image);
         }
@@ -340,9 +351,9 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 return Result<ResetPasswordEmailDto>.Failure(null, "Email is required.",ErrorType.ValidationError);
             }
-            var user = await GetUserByEmailAsync(resetPasswordEmailDto.Email);
-            
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var userResult = await GetUserByEmailAsync(resetPasswordEmailDto.Email);
+            if (!userResult.IsSuccess) return Result<ResetPasswordEmailDto>.Failure(userResult.ErrorKey, userResult.Message, (ErrorType)userResult.ErrorType);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(userResult.Data);
             resetPasswordEmailDto.Token = token;
             return Result<ResetPasswordEmailDto>.Success(resetPasswordEmailDto);
         }
@@ -350,15 +361,16 @@ namespace LearningManagementSystem.Application.Implementations
         {
            
             await CheckExperySutiationOfToken(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token);
-            var existedUser = await GetUserByEmailAsync(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email);
-            var isNewOrCurrentPassword = await _userManager.CheckPasswordAsync(existedUser, resetPasswordHandleDto.resetPasswordDto.Password);
+            var existedUserResult = await GetUserByEmailAsync(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email);
+            if (!existedUserResult.IsSuccess) return Result<string>.Failure(existedUserResult.ErrorKey, existedUserResult.Message, (ErrorType)existedUserResult.ErrorType);
+            var isNewOrCurrentPassword = await _userManager.CheckPasswordAsync(existedUserResult.Data, resetPasswordHandleDto.resetPasswordDto.Password);
             if (isNewOrCurrentPassword)
             {
-                Result<string>.Failure("Password", "You cannot use your previous password.", ErrorType.BusinessLogicError);
+             return   Result<string>.Failure("Password", "You cannot use your previous password.", ErrorType.BusinessLogicError);
             }
-            var result = await _userManager.ResetPasswordAsync(existedUser, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token, resetPasswordHandleDto.resetPasswordDto.Password);
+            var result = await _userManager.ResetPasswordAsync(existedUserResult.Data, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token, resetPasswordHandleDto.resetPasswordDto.Password);
             if (!result.Succeeded) throw new CustomException(400, result.Errors.ToString());
-            await _userManager.UpdateSecurityStampAsync(existedUser);
+            await _userManager.UpdateSecurityStampAsync(existedUserResult.Data);
             return Result<string>.Success("password Reseted");
 
         }
@@ -408,19 +420,19 @@ namespace LearningManagementSystem.Application.Implementations
             await _userManager.DeleteAsync(existedUser);
             return Result<string>.Success(existedUser.Id);
         }
-        private async Task<AppUser> GetUserByEmailAsync(string email)
+        private async Task<Result<AppUser>> GetUserByEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
             {
-                throw new CustomException(400, "Email is required.");
+                return Result<AppUser>.Failure(null, "Email is required.", ErrorType.ValidationError);
             }
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                throw new CustomException(404, "User not found.");
+                return Result<AppUser>.Failure(null, "User not found.", ErrorType.NotFoundError);
             }
-            return user;
+            return Result<AppUser>.Success(user);
         }
         public async Task<Result<string>> GetUserName()
         {
