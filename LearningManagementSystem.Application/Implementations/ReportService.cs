@@ -2,6 +2,7 @@
 using CloudinaryDotNet.Actions;
 using Hangfire;
 using LearningManagementSystem.Application.Dtos.Auth;
+using LearningManagementSystem.Application.Dtos.Course;
 using LearningManagementSystem.Application.Dtos.Report;
 using LearningManagementSystem.Application.Exceptions;
 using LearningManagementSystem.Application.Interfaces;
@@ -30,33 +31,33 @@ namespace LearningManagementSystem.Application.Implementations
             _userManager = userManager;
             _emailService = emailService;
         }
-        public async Task<ReportReturnDto> Create(ReportCreateDto reportCreateDto)
+        public async Task<Result<ReportReturnDto>> Create(ReportCreateDto reportCreateDto)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new CustomException(400, "Id", "User ID cannot be null");
+                return Result<ReportReturnDto>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
             }
             var existedUser = await _userManager.Users
                  .Include(u => u.Reports)
                  .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser is null)
             {
-                throw new CustomException(404, "User", "User  cannot be null");
+                return Result<ReportReturnDto>.Failure("User", "User  cannot be null", ErrorType.NotFoundError);
             }
             reportCreateDto.AppUserId = userId;
             var ReportedUser = await _userManager.Users.FirstOrDefaultAsync(s => s.Id == reportCreateDto.ReportedUserId);
             if (ReportedUser is null)
             {
-                throw new CustomException(400, "ReportedUserId", "Reported user not found");
+                return Result<ReportReturnDto>.Failure("ReportedUserId", "Reported user not found", ErrorType.NotFoundError);
             }
             if (ReportedUser.Id == existedUser.Id)
             {
-                throw new CustomException(404, "User", "User  cannot report himself");
+                return Result<ReportReturnDto>.Failure("User", "User  cannot report himself", ErrorType.BusinessLogicError);
             }
             if (await _unitOfWork.ReportOptionRepository.isExists(s => s.Id != reportCreateDto.ReportOptionId))
             {
-                throw new CustomException(400, "ReportOptionId", "ReportOption  is invalid");
+                return Result<ReportReturnDto>.Failure("ReportOptionId", "ReportOption is invalid", ErrorType.ValidationError);
             }
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
@@ -65,7 +66,7 @@ namespace LearningManagementSystem.Application.Implementations
           
             if (count >= 3)
             {
-                throw new CustomException(400, "Reports", "amount of reports you can have reached limit");
+                return Result<ReportReturnDto>.Failure("Reports", "amount of reports you can have reached limit", ErrorType.BusinessLogicError);
             }
             var mappedReport = _mapper.Map<Report>(reportCreateDto);
             await _unitOfWork.ReportRepository.Create(mappedReport);
@@ -81,13 +82,13 @@ namespace LearningManagementSystem.Application.Implementations
                 query => query.Include(s=>s.ReportedUser).Include(s=>s.ReportOption)
             });    
             var MappedReturnedReportDto = _mapper.Map<ReportReturnDto>(IncludedMappedReport);
-            return MappedReturnedReportDto;
+            return Result<ReportReturnDto>.Success(MappedReturnedReportDto);
         }
-        public async Task<string> VerifyReport(Guid id)
+        public async Task<Result<string>> VerifyReport(Guid id)
         {
             if (id == Guid.Empty)
             {
-                throw new CustomException(440, "Invalid GUID provided.");
+                return Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
             }
             var existedReport = await _unitOfWork.ReportRepository.GetEntity(s => s.Id == id && s.IsDeleted == false, includes: new Func<IQueryable<Report>, IQueryable<Report>>[] {
                  query => query
@@ -96,7 +97,7 @@ namespace LearningManagementSystem.Application.Implementations
 
             if (existedReport == null)
             {
-                throw new CustomException(400, "existedReport", "existedReport  not found");
+                return Result<string>.Failure("ReportedUserId", "Reported user not found", ErrorType.NotFoundError);
             }
             if (!existedReport.IsVerified)
             {
@@ -117,7 +118,7 @@ namespace LearningManagementSystem.Application.Implementations
                    "nihadcoding@gmail.com",
                    "gulzclohfwjelppj"
                ));
-            return "Approved By Admin";
+            return Result<string>.Success("Approved By Admin");
         }
         public async Task<Result<string>> DeleteForUser(Guid id)
         {

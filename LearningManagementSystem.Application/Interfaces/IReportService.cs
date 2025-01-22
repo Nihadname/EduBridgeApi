@@ -10,8 +10,8 @@ namespace LearningManagementSystem.Application.Interfaces
 {
     public interface IReportService
     {
-        Task<ReportReturnDto> Create(ReportCreateDto reportCreateDto);
-        Task<string> VerifyReport(Guid id);
+        Task<Result<ReportReturnDto>> Create(ReportCreateDto reportCreateDto);
+        Task<Result<string>> VerifyReport(Guid id);
         Task<Result<string>> DeleteForUser(Guid id);
         Task<Result<string>> DeleteForAdmin(Guid id);
     }
