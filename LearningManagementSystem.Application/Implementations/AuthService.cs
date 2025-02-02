@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using CloudinaryDotNet.Actions;
 using Hangfire;
 using LearningManagementSystem.Application.AppDefaults;
 using LearningManagementSystem.Application.Dtos.Auth;
@@ -19,7 +18,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Stripe;
-using System.Collections.Generic;
 using System.Security.Claims;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -57,7 +55,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<UserGetDto>> RegisterForStudent(RegisterDto registerDto)
         {
             var appUserResult = await CreateUser(registerDto);
-            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, (ErrorType)appUserResult.ErrorType);
+            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message,appUserResult.Errors, (ErrorType)appUserResult.ErrorType);
 
             await _userManager.AddToRoleAsync(appUserResult.Data, RolesEnum.Student.ToString());
             await _userManager.UpdateAsync(appUserResult.Data);
@@ -75,7 +73,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<UserGetDto>> RegisterForTeacher(TeacherRegistrationDto teacherRegistrationDto)
         {
             var appUserResult = await CreateUser(teacherRegistrationDto.Register);
-            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, (ErrorType)appUserResult.ErrorType);
+            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, appUserResult.Errors, (ErrorType)appUserResult.ErrorType);
             await _userManager.AddToRoleAsync(appUserResult.Data, RolesEnum.Teacher.ToString());
             teacherRegistrationDto.Teacher.AppUserId=appUserResult.Data.Id;
             var MappedTeacher = _mapper.Map<Teacher>(teacherRegistrationDto.Teacher);
@@ -87,7 +85,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<UserGetDto>> RegisterForParent(ParentRegisterDto  parentRegisterDto)
         {
             var appUserResult = await CreateUser(parentRegisterDto.Register);
-            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message, (ErrorType)appUserResult.ErrorType); await _roleManager.CreateAsync(new IdentityRole(RolesEnum.Parent.ToString()));
+            if (!appUserResult.IsSuccess) return Result<UserGetDto>.Failure(appUserResult.ErrorKey, appUserResult.Message,  appUserResult.Errors, (ErrorType)appUserResult.ErrorType); await _roleManager.CreateAsync(new IdentityRole(RolesEnum.Parent.ToString()));
 
             await _userManager.AddToRoleAsync(appUserResult.Data, RolesEnum.Parent.ToString());
             parentRegisterDto.Parent.AppUserId=appUserResult.Data.Id;
@@ -105,7 +103,7 @@ namespace LearningManagementSystem.Application.Implementations
                     }
                     else
                     {
-                        return Result<UserGetDto>.Failure("StudentId", "the choosen student  doesnt exist", ErrorType.NotFoundError);
+                        return Result<UserGetDto>.Failure("StudentId", "the choosen student  doesnt exist",null, ErrorType.NotFoundError);
                     }
                 }
                 MappedParent.Students = Students;
@@ -119,17 +117,17 @@ namespace LearningManagementSystem.Application.Implementations
         private async Task<Result<AppUser>> CreateUser(RegisterDto registerDto)
         {
             var existUser = await _userManager.FindByNameAsync(registerDto.UserName);
-            if (existUser != null) return Result<AppUser>.Failure("UserName", "UserName is already Taken", ErrorType.BusinessLogicError);
+            if (existUser != null) return Result<AppUser>.Failure("UserName", "UserName is already Taken", null, ErrorType.BusinessLogicError);
             var existUserEmail = await _userManager.FindByEmailAsync(registerDto.Email);
             if (existUserEmail != null)
-                return Result<AppUser>.Failure("Email", "Email is already taken", ErrorType.BusinessLogicError);
+                return Result<AppUser>.Failure("Email", "Email is already taken", null, ErrorType.BusinessLogicError);
             if (await _context.Users.FirstOrDefaultAsync(s => s.PhoneNumber.ToLower() == registerDto.PhoneNumber.ToLower()) is not null)
             {
-                return Result<AppUser>.Failure("PhoneNumber", "PhoneNumber already exists", ErrorType.BusinessLogicError);
+                return Result<AppUser>.Failure("PhoneNumber", "PhoneNumber already exists", null, ErrorType.BusinessLogicError);
             }
             if (DateTime.Now.Year - registerDto.BirthDate.Year <15)
             {
-                return Result<AppUser>.Failure("BirthDate", "Student can not be younger than 15", ErrorType.BusinessLogicError);
+                return Result<AppUser>.Failure("BirthDate", "Student can not be younger than 15", null, ErrorType.BusinessLogicError);
             }
             AppUser appUser = new AppUser();
             appUser.UserName = registerDto.UserName;
@@ -145,13 +143,14 @@ namespace LearningManagementSystem.Application.Implementations
           
             if (!result.Succeeded)
             {
-                string errors=string.Empty;
                 var errorMessages = result.Errors.ToDictionary(e => e.Code, e => e.Description);
+                List<string> errors = new List<string>();
                 foreach (KeyValuePair<string, string> keyValues in errorMessages)
                 {
-                    errors += keyValues.Key + " : " + keyValues.Value + ", ";
+                    errors.Add(keyValues.Key + " " + keyValues.Value);
                 }
-                return Result<AppUser>.Failure(null, errors.TrimEnd(',', ' '), ErrorType.SystemError);
+
+                var response = Result<string>.Failure("User  errors found", null, errors, ErrorType.ValidationError);
             }
             var customerOptions = new CustomerCreateOptions
             {
@@ -188,9 +187,9 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<Result<string>> SendVerificationCode(string email)
         {
-            if (string.IsNullOrEmpty(email)) return Result<string>.Failure("email", "email is null", ErrorType.ValidationError);
+            if (string.IsNullOrEmpty(email)) return Result<string>.Failure("email", "email is null", null, ErrorType.ValidationError);
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return Result<string>.Failure("user", "user is null", ErrorType.NotFoundError);
+            if (user is null) return Result<string>.Failure("user", "user is null", null, ErrorType.NotFoundError);
             var verificationCode = new Random().Next(100000, 999999).ToString();
             string salt;
             string hashedCode=verificationCode.GenerateHash(out salt);
@@ -216,10 +215,10 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<string>> VerifyCode(VerifyCodeDto verifyCodeDto)
         {
             var existedUser=await _userManager.FindByEmailAsync(verifyCodeDto.Email);
-            if (existedUser is null) return Result<string>.Failure("User", "User is null", ErrorType.NotFoundError);
+            if (existedUser is null) return Result<string>.Failure("User", "User is null", null, ErrorType.NotFoundError);
             bool isValid = HashExtension.VerifyHash(verifyCodeDto.Code,existedUser.Salt, existedUser.VerificationCode);
             if (!isValid || existedUser.ExpiredDate < DateTime.UtcNow)
-               return Result<string>.Failure("Code", "Invalid or expired verification code.", ErrorType.BusinessLogicError);
+               return Result<string>.Failure("Code", "Invalid or expired verification code.", null, ErrorType.BusinessLogicError);
             existedUser.IsEmailVerificationCodeValid = true;
             existedUser.VerificationCode = null;
             existedUser.ExpiredDate = null;
@@ -237,7 +236,7 @@ namespace LearningManagementSystem.Application.Implementations
                     .FirstOrDefaultAsync(s => s.UserName.ToLower() == loginDto.UserNameOrGmail.ToLower());
                 if (User == null)
                 {
-                    return Result<AuthResponseDto>.Failure("UserNameOrGmail", "userName or email is wrong\"",ErrorType.NotFoundError);
+                    return Result<AuthResponseDto>.Failure("UserNameOrGmail", "userName or email is wrong\"",null, ErrorType.NotFoundError);
                 }
             }
             if (User.IsFirstTimeLogined)
@@ -262,7 +261,7 @@ namespace LearningManagementSystem.Application.Implementations
 
             if (!result)
             {
-                return Result<AuthResponseDto>.Failure("Password", "Password or email is wrong\"", ErrorType.ValidationError);
+                return Result<AuthResponseDto>.Failure("Password", "Password or email is wrong\"",null, ErrorType.ValidationError);
             }
             
             if (User.IsBlocked && User.BlockedUntil.HasValue)
@@ -276,7 +275,7 @@ namespace LearningManagementSystem.Application.Implementations
                 else
                 {
 
-                    return Result<AuthResponseDto>.Failure("UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}", ErrorType.BusinessLogicError);
+                    return Result<AuthResponseDto>.Failure("UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}",null, ErrorType.BusinessLogicError);
                 }
             }
             IList<string> roles = await _userManager.GetRolesAsync(User);
@@ -294,9 +293,9 @@ namespace LearningManagementSystem.Application.Implementations
             //}
             if (User.IsReportedHighly)
             {
-                return Result<AuthResponseDto>.Failure("User", "You are reported too many times ,so account is locked now, we will contact with you", ErrorType.BusinessLogicError);
+                return Result<AuthResponseDto>.Failure("User", "You are reported too many times ,so account is locked now, we will contact with you", null, ErrorType.BusinessLogicError);
             }
-            if (!User.IsEmailVerificationCodeValid) return Result<AuthResponseDto>.Failure("User", "pls verify your account by getting code", ErrorType.BusinessLogicError);
+            if (!User.IsEmailVerificationCodeValid) return Result<AuthResponseDto>.Failure("User", "pls verify your account by getting code",null, ErrorType.BusinessLogicError);
             var Audience = _jwtSettings.Audience;
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
@@ -312,11 +311,11 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<string>.Failure("Id", "User Id cannot be null",ErrorType.UnauthorizedError);
+                return Result<string>.Failure("Id", "User Id cannot be null",null, ErrorType.UnauthorizedError);
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user is null)
-                return Result<string>.Failure("Id", "this user doesnt exist", ErrorType.UnauthorizedError);
+                return Result<string>.Failure("Id", "this user doesnt exist",null, ErrorType.UnauthorizedError);
             if (!string.IsNullOrEmpty(user.Image))
             {
                 user.Image.DeleteFile();
@@ -330,12 +329,12 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return  Result<string>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+                return  Result<string>.Failure("Id", "User ID cannot be null",null, ErrorType.UnauthorizedError);
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user is null)
             {
-                return Result<string>.Failure("Id", "this user doesnt exist", ErrorType.UnauthorizedError);
+                return Result<string>.Failure("Id", "this user doesnt exist", null, ErrorType.UnauthorizedError);
             }
             var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (!result.Succeeded)
@@ -349,10 +348,10 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (string.IsNullOrEmpty(resetPasswordEmailDto.Email))
             {
-                return Result<ResetPasswordEmailDto>.Failure(null, "Email is required.",ErrorType.ValidationError);
+                return Result<ResetPasswordEmailDto>.Failure(null, "Email is required.",null ,ErrorType.ValidationError);
             }
             var userResult = await GetUserByEmailAsync(resetPasswordEmailDto.Email);
-            if (!userResult.IsSuccess) return Result<ResetPasswordEmailDto>.Failure(userResult.ErrorKey, userResult.Message, (ErrorType)userResult.ErrorType);
+            if (!userResult.IsSuccess) return Result<ResetPasswordEmailDto>.Failure(userResult.ErrorKey, userResult.Message, userResult.Errors, (ErrorType)userResult.ErrorType);
             var token = await _userManager.GeneratePasswordResetTokenAsync(userResult.Data);
             resetPasswordEmailDto.Token = token;
             return Result<ResetPasswordEmailDto>.Success(resetPasswordEmailDto);
@@ -362,11 +361,11 @@ namespace LearningManagementSystem.Application.Implementations
            
             await CheckExperySutiationOfToken(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token);
             var existedUserResult = await GetUserByEmailAsync(resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Email);
-            if (!existedUserResult.IsSuccess) return Result<string>.Failure(existedUserResult.ErrorKey, existedUserResult.Message, (ErrorType)existedUserResult.ErrorType);
+            if (!existedUserResult.IsSuccess) return Result<string>.Failure(existedUserResult.ErrorKey, existedUserResult.Message, existedUserResult.Errors,(ErrorType)existedUserResult.ErrorType);
             var isNewOrCurrentPassword = await _userManager.CheckPasswordAsync(existedUserResult.Data, resetPasswordHandleDto.resetPasswordDto.Password);
             if (isNewOrCurrentPassword)
             {
-             return   Result<string>.Failure("Password", "You cannot use your previous password.", ErrorType.BusinessLogicError);
+             return   Result<string>.Failure("Password", "You cannot use your previous password.",null, ErrorType.BusinessLogicError);
             }
             var result = await _userManager.ResetPasswordAsync(existedUserResult.Data, resetPasswordHandleDto.ResetPasswordTokenAndEmailDto.Token, resetPasswordHandleDto.resetPasswordDto.Password);
             if (!result.Succeeded) throw new CustomException(400, result.Errors.ToString());
@@ -398,21 +397,21 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (string.IsNullOrWhiteSpace(id)|| id is null)
             {
-                return Result<string>.Failure("Id", "Id can not be null", ErrorType.ValidationError);
+                return Result<string>.Failure("Id", "Id can not be null", null, ErrorType.ValidationError);
             }
             var existedUser = await _userManager.Users
      .Include(u => u.Teacher) 
      .FirstOrDefaultAsync(u => u.Id == id);
             if (existedUser is null)
             {
-                return Result<string>.Failure("User", "User can not be null", ErrorType.NotFoundError);
+                return Result<string>.Failure("User", "User can not be null", null, ErrorType.NotFoundError);
             }
             if(existedUser.Teacher is not null)
             {
                 var existedTeacher = await _unitOfWork.TeacherRepository.GetEntity(s => s.AppUserId == existedUser.Id);
                 if(existedTeacher is null)
                 {
-                    return Result<string>.Failure("User", "User can not be null",ErrorType.NotFoundError);
+                    return Result<string>.Failure("User", "User can not be null",null, ErrorType.NotFoundError);
                 }
                 await _unitOfWork.TeacherRepository.Delete(existedTeacher);
                 await _unitOfWork.Commit();
@@ -424,13 +423,13 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (string.IsNullOrEmpty(email))
             {
-                return Result<AppUser>.Failure(null, "Email is required.", ErrorType.ValidationError);
+                return Result<AppUser>.Failure(null, "Email is required.",null, ErrorType.ValidationError);
             }
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return Result<AppUser>.Failure(null, "User not found.", ErrorType.NotFoundError);
+                return Result<AppUser>.Failure(null, "User not found.", null, ErrorType.NotFoundError);
             }
             return Result<AppUser>.Success(user);
         }
@@ -442,7 +441,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<UserGetDto>> Profile()
         {
             var userResult = await GetUserWithIdInTheSystem();
-            if(!userResult.IsSuccess) return Result<UserGetDto>.Failure(userResult.ErrorKey,userResult.Message, (ErrorType)userResult.ErrorType);
+            if(!userResult.IsSuccess) return Result<UserGetDto>.Failure(userResult.ErrorKey,userResult.Message, userResult.Errors, (ErrorType)userResult.ErrorType);
         var existedUser = userResult.Data;
             
             var mappedUser=_mapper.Map<UserGetDto>(existedUser);
@@ -453,7 +452,7 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<AppUser>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+                return Result<AppUser>.Failure("Id", "User ID cannot be null",null, ErrorType.UnauthorizedError);
             }
             var cacheKey = $"AppUser_{userId}";
             var cachedNote = await _cache.GetOrSetAsync<Result<AppUser>>(cacheKey, async _ =>
@@ -461,7 +460,7 @@ namespace LearningManagementSystem.Application.Implementations
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
-                    if (user is null) return Result<AppUser>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+                    if (user is null) return Result<AppUser>.Failure("Id", "User ID cannot be null",null, ErrorType.UnauthorizedError);
 
                 }
                 return Result<AppUser>.Success(user);

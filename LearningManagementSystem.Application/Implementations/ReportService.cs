@@ -36,28 +36,28 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return Result<ReportReturnDto>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+                return Result<ReportReturnDto>.Failure("Id", "User ID cannot be null", null, ErrorType.UnauthorizedError);
             }
             var existedUser = await _userManager.Users
                  .Include(u => u.Reports)
                  .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser is null)
             {
-                return Result<ReportReturnDto>.Failure("User", "User  cannot be null", ErrorType.NotFoundError);
+                return Result<ReportReturnDto>.Failure("User", "User  cannot be null",null, ErrorType.NotFoundError);
             }
             reportCreateDto.AppUserId = userId;
             var ReportedUser = await _userManager.Users.FirstOrDefaultAsync(s => s.Id == reportCreateDto.ReportedUserId);
             if (ReportedUser is null)
             {
-                return Result<ReportReturnDto>.Failure("ReportedUserId", "Reported user not found", ErrorType.NotFoundError);
+                return Result<ReportReturnDto>.Failure("ReportedUserId", "Reported user not found",null, ErrorType.NotFoundError);
             }
             if (ReportedUser.Id == existedUser.Id)
             {
-                return Result<ReportReturnDto>.Failure("User", "User  cannot report himself", ErrorType.BusinessLogicError);
+                return Result<ReportReturnDto>.Failure("User", "User  cannot report himself", null, ErrorType.BusinessLogicError);
             }
             if (await _unitOfWork.ReportOptionRepository.isExists(s => s.Id != reportCreateDto.ReportOptionId))
             {
-                return Result<ReportReturnDto>.Failure("ReportOptionId", "ReportOption is invalid", ErrorType.ValidationError);
+                return Result<ReportReturnDto>.Failure("ReportOptionId", "ReportOption is invalid",null, ErrorType.ValidationError);
             }
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
@@ -66,7 +66,7 @@ namespace LearningManagementSystem.Application.Implementations
           
             if (count >= 3)
             {
-                return Result<ReportReturnDto>.Failure("Reports", "amount of reports you can have reached limit", ErrorType.BusinessLogicError);
+                return Result<ReportReturnDto>.Failure("Reports", "amount of reports you can have reached limit",null, ErrorType.BusinessLogicError);
             }
             var mappedReport = _mapper.Map<Report>(reportCreateDto);
             await _unitOfWork.ReportRepository.Create(mappedReport);
@@ -88,7 +88,7 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-                return Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+                return Result<string>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
             }
             var existedReport = await _unitOfWork.ReportRepository.GetEntity(s => s.Id == id && s.IsDeleted == false, includes: new Func<IQueryable<Report>, IQueryable<Report>>[] {
                  query => query
@@ -97,7 +97,7 @@ namespace LearningManagementSystem.Application.Implementations
 
             if (existedReport == null)
             {
-                return Result<string>.Failure("ReportedUserId", "Reported user not found", ErrorType.NotFoundError);
+                return Result<string>.Failure("ReportedUserId", "Reported user not found",null, ErrorType.NotFoundError);
             }
             if (!existedReport.IsVerified)
             {
@@ -123,7 +123,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<string>> DeleteForUser(Guid id)
         {
             var userReportResult = await GetUserReport(id);
-            if (!userReportResult.IsSuccess) return Result<string>.Failure(userReportResult.ErrorKey, userReportResult.Message, (ErrorType)userReportResult.ErrorType);
+            if (!userReportResult.IsSuccess) return Result<string>.Failure(userReportResult.ErrorKey, userReportResult.Message,userReportResult.Errors, (ErrorType)userReportResult.ErrorType);
             userReportResult.Data.IsDeleted = true;
             await _unitOfWork.ReportRepository.Update(userReportResult.Data);
             await _unitOfWork.Commit();
@@ -132,7 +132,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<string>> DeleteForAdmin(Guid id)
         {
          var userReportResult=   await GetUserReport(id);
-            if (!userReportResult.IsSuccess) return Result<string>.Failure(userReportResult.ErrorKey, userReportResult.Message, (ErrorType)userReportResult.ErrorType);
+            if (!userReportResult.IsSuccess) return Result<string>.Failure(userReportResult.ErrorKey, userReportResult.Message, userReportResult.Errors, (ErrorType)userReportResult.ErrorType);
 
             await _unitOfWork.ReportRepository.Delete(userReportResult.Data);  
             await _unitOfWork.Commit();
@@ -143,11 +143,11 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return Result<Report>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+                return Result<Report>.Failure("Id", "User ID cannot be null", null, ErrorType.UnauthorizedError);
             }
             if (id == Guid.Empty)
             {
-                return Result<Report>.Failure("Id", "Invalid GUID provided.", ErrorType.ValidationError);
+                return Result<Report>.Failure("Id", "Invalid GUID provided.",null, ErrorType.ValidationError);
 
             }
             var existedReport = await _unitOfWork.ReportRepository.GetEntity(s => s.Id == id && s.AppUserId == userId && s.IsDeleted == false);

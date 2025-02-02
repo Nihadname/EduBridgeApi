@@ -44,17 +44,17 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return Result<AddressReturnDto>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+                return Result<AddressReturnDto>.Failure("UserId", "User ID cannot be null",null, ErrorType.UnauthorizedError);
             }
             var existedUser=await _userManager.Users
     .Include(u => u.Address) 
     .FirstOrDefaultAsync(u => u.Id == userId);
-            if (existedUser is null) return Result<AddressReturnDto>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
+            if (existedUser is null) return Result<AddressReturnDto>.Failure("User", "User  cannot be null or not  found",null, ErrorType.NotFoundError);
             addressCreateDto.AppUserId= userId;
             if (existedUser.Address is not null)
-                return Result<AddressReturnDto>.Failure("Address", "User already has an address. Update or delete the existing address instead.", ErrorType.SystemError);
+                return Result<AddressReturnDto>.Failure("Address", "User already has an address. Update or delete the existing address instead.",null, ErrorType.SystemError);
             var isExistedLocation =await IsLocationExist(addressCreateDto);
-            if(!isExistedLocation) return Result<AddressReturnDto>.Failure("location", "location doesnt exist in the map", ErrorType.BusinessLogicError);
+            if(!isExistedLocation) return Result<AddressReturnDto>.Failure("location", "location doesnt exist in the map",null, ErrorType.BusinessLogicError);
             var mappedAddress = _mapper.Map<Address>(addressCreateDto);
             mappedAddress.appUser= existedUser;
             await _unitOfWork.AddressRepository.Create(mappedAddress);
@@ -102,16 +102,16 @@ namespace LearningManagementSystem.Application.Implementations
         }
         public async Task<Result<string>> DeleteForUser(Guid id)
         {
-            if (id == Guid.Empty) return Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+            if (id == Guid.Empty) return Result<string>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-               return Result<string>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+               return Result<string>.Failure("UserId", "User ID cannot be null",null, ErrorType.UnauthorizedError);
             }
            var existedUser=await _userManager.FindByIdAsync(userId);
-            if(existedUser is null) return Result<string>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
+            if(existedUser is null) return Result<string>.Failure("User", "User  cannot be null or not  found",null, ErrorType.NotFoundError);
             var existedAddress = await _unitOfWork.AddressRepository.GetEntity(s => s.Id == id & s.IsDeleted == false&s.AppUserId==existedUser.Id);
-            if (existedAddress is null) return Result<string>.Failure("Adress", "Address is null", ErrorType.NotFoundError);
+            if (existedAddress is null) return Result<string>.Failure("Adress", "Address is null",null, ErrorType.NotFoundError);
             await _unitOfWork.AddressRepository.Delete(existedAddress);
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted By User");
@@ -128,7 +128,7 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 var existedUserWithGivenId =await _userManager.FindByIdAsync(appUserId);
                 if (existedUserWithGivenId is null)
-                    return Result<PaginationDto<AddressListItemDto>>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
+                    return Result<PaginationDto<AddressListItemDto>>.Failure("User", "User  cannot be null or not  found",null, ErrorType.NotFoundError);
                 addressQuery=addressQuery.Where(s=>s.AppUserId==existedUserWithGivenId.Id);
 
             }

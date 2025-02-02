@@ -4,6 +4,7 @@ using Hangfire;
 using LearningManagementSystem.Application.Settings;
 using LearningManagementSystem.Application.Validators.AuthValidators;
 using LearningManagementSystem.Core.Entities;
+using LearningManagementSystem.Core.Entities.Common;
 using LearningManagementSystem.Core.Repositories;
 using LearningManagementSystem.DataAccess.Data;
 using LearningManagementSystem.DataAccess.Data.Implementations;
@@ -35,18 +36,19 @@ namespace LearningManagementSystem.Api
             {
                 opt.InvalidModelStateResponseFactory = context =>
                 {
-                    var errors = context.ModelState
-                        .Where(e => e.Value?.Errors.Count > 0)
-                        .ToDictionary(
-                            x => x.Key,
-                            x => x.Value.Errors.First().ErrorMessage
-                        );
-
-                    var response = new
+                    var errorsValidation = context.ModelState
+                       .Where(e => e.Value?.Errors.Count > 0)
+                       .ToDictionary(
+                           x => x.Key,
+                           x => x.Value.Errors.First().ErrorMessage
+                       );
+                    List<string> errors = new List<string>();
+                    foreach (KeyValuePair<string, string> keyValues in errorsValidation)
                     {
-                        message = "Validation errors occurred.",
-                        errors
-                    };
+                        errors.Add(keyValues.Key+" " +keyValues.Value);
+                    }
+
+                    var response = Result<string>.Failure("Validation errors found",null, errors, ErrorType.ValidationError);
 
                     return new BadRequestObjectResult(response);
                 };

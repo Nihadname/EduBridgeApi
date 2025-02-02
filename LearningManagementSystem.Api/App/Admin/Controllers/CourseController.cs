@@ -26,6 +26,7 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Create([FromForm] CreateCourseCommand  createCourseCommand)
         {
             var result = await _mediator.Send(createCourseCommand);
@@ -64,10 +65,11 @@ namespace LearningManagementSystem.Api.App.Admin.Controllers
            return Ok(result);
         }
         [HttpGet("GetAll")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> GetAll(GetAllCourseQuery getAllCourseQuery)
         {
-            var result=await _mediator.Send(getAllCourseQuery);
-            return Ok(result);  
+            var result = await _mediator.Send(getAllCourseQuery);
+            return Ok(result);
         }
     }
 }

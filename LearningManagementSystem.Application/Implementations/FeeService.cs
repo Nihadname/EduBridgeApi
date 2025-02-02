@@ -39,7 +39,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<string>> CreateFeeAndAssignToStudent(FeeCreateDto feeCreateDto)
         {
             if (!await _unitOfWork.StudentRepository.isExists(s => s.Id == feeCreateDto.StudentId)) 
-                return Result<string>.Failure("StudentId", "Id is invalid", ErrorType.NotFoundError);
+                return Result<string>.Failure("StudentId", "Id is invalid",null, ErrorType.NotFoundError);
             var lastFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(f => f.StudentId == feeCreateDto.StudentId && !f.IsDeleted);
             feeCreateDto.DueDate = lastFee != null ? lastFee.DueDate.AddMonths(1) : DateTime.Now.AddMonths(1);
             feeCreateDto.PaymentStatus=PaymentStatus.Pending;
@@ -54,46 +54,51 @@ namespace LearningManagementSystem.Application.Implementations
         }
        public async Task CreateFeeToAllStudents(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
-            {
+            
                 var allStudents = await _unitOfWork.StudentRepository.GetAll(s => s.IsEnrolled == true && !s.IsDeleted, true, includes: new Func<IQueryable<Student>, IQueryable<Student>>[]
             {
                 query => query.Include(s=>s.courseStudents).ThenInclude(s=>s.Course)
             });
 
-                foreach (var student in allStudents)
+            foreach (var student in allStudents)
+            {
+                decimal amount = student.courseStudents.Where(x => x.Course != null).Select(x => x.Course.Price).Sum();
+                var hasFeeInThisMonth = await _unitOfWork.FeeRepository.isExists(s => s.Id == student.Id && s.CreatedTime.Value.Year == DateTime.UtcNow.Year &&
+                 s.CreatedTime.Value.Month == DateTime.UtcNow.Month);
+                if (!hasFeeInThisMonth)
                 {
-                    decimal amount = student.courseStudents.Where(x => x.Course != null).Select(x => x.Course.Price).Sum();
                     FeeCreateDto feeCreateDto = new()
                     {
                         Amount = amount,
                         StudentId = student.Id
                     };
+
                     await CreateFeeAndAssignToStudent(feeCreateDto);
                 }
             }
+            
         }
        public async Task<Result<string>> UploadImageOfBankTransfer(FeeImageUploadDto feeImageUploadDto ) {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return Result<string>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+                return Result<string>.Failure("UserId", "User ID cannot be null",null, ErrorType.UnauthorizedError);
             }
             var existedUser = await _userManager.Users
      .Include(u => u.Student)
        .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser == null)
             {
-                return Result<string>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
+                return Result<string>.Failure("User", "User  cannot be null or not  found", null, ErrorType.UnauthorizedError);
             }
             var existedFee=await _unitOfWork.FeeRepository.GetEntity(s=>s.Id==feeImageUploadDto.Id&&s.StudentId==existedUser.Student.Id&&!s.IsDeleted);
             if (existedFee == null)
             {
-                return Result<string>.Failure("Fee", "Fee  cannot be null or not  found", ErrorType.NotFoundError);
+                return Result<string>.Failure("Fee", "Fee  cannot be null or not  found", null, ErrorType.NotFoundError);
             }
             if (existedFee.PaymentStatus == PaymentStatus.Paid)
             {
-                return Result<string>.Failure("Fee", "Fee  already paid", ErrorType.BusinessLogicError);
+                return Result<string>.Failure("Fee", "Fee  already paid", null, ErrorType.BusinessLogicError);
             }
             existedFee.PaymentMethod=Core.Entities.PaymentMethod.BankTransfer;
             existedFee.ProvementImageUrl= await _photoOrVideoService.UploadMediaAsync(feeImageUploadDto.image, false);
@@ -105,12 +110,12 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-              return  Result<string>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+              return  Result<string>.Failure(null, "Invalid GUID provided.", null, ErrorType.ValidationError);
             }
             var existedFee=await _unitOfWork.FeeRepository.GetEntity(s=>s.Id==id&!s.IsDeleted);
-            if (existedFee is null) return Result<string>.Failure(null, "fee is null", ErrorType.NotFoundError);
+            if (existedFee is null) return Result<string>.Failure(null, "fee is null", null, ErrorType.NotFoundError);
             if (existedFee.ProvementImageUrl != null && existedFee.IsBankTransferAccepted)
-                return Result<string>.Failure("Fee", "Fee already acceppted", ErrorType.BusinessLogicError);
+                return Result<string>.Failure("Fee", "Fee already acceppted",null, ErrorType.BusinessLogicError);
             existedFee.PaymentStatus=PaymentStatus.Paid;
             existedFee.IsBankTransferAccepted=true;
             existedFee.PaidDate=DateTime.Now;
@@ -125,34 +130,34 @@ namespace LearningManagementSystem.Application.Implementations
             {
                 if (id == Guid.Empty)
                 {
-                    return Result<FeeResponseDto>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+                    return Result<FeeResponseDto>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
                 }
                 var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrWhiteSpace(userId))
                 {
-                    return Result<FeeResponseDto>.Failure("UserId", "User ID cannot be null", ErrorType.UnauthorizedError);
+                    return Result<FeeResponseDto>.Failure("UserId", "User ID cannot be null", null, ErrorType.UnauthorizedError);
                 }
                 var existedUser = await _userManager.Users
          .Include(u => u.Student)
            .FirstOrDefaultAsync(u => u.Id == userId);
                 if (existedUser == null)
                 {
-                    return Result<FeeResponseDto>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
+                    return Result<FeeResponseDto>.Failure("User", "User  cannot be null or not  found",null, ErrorType.UnauthorizedError);
                 }
                 var rolesOfExistedUser =await _userManager.GetRolesAsync(existedUser);
 
                 if(existedUser.Student is null||!rolesOfExistedUser.Contains(RolesEnum.Student.ToString()))
                 {
-                    return Result<FeeResponseDto>.Failure("User", "User  is not student", ErrorType.UnauthorizedError);
+                    return Result<FeeResponseDto>.Failure("User", "User  is not student", null, ErrorType.UnauthorizedError);
                 }
                 var existedFee = await _unitOfWork.FeeRepository.GetEntity(s => s.Id == id && s.StudentId == existedUser.Student.Id && !s.IsDeleted);
                 if (existedFee == null)
                 {
-                    return Result<FeeResponseDto>.Failure("Fee", "Fee  cannot be null or not  found", ErrorType.NotFoundError);
+                    return Result<FeeResponseDto>.Failure("Fee", "Fee  cannot be null or not  found",null, ErrorType.NotFoundError);
                 }
                 if (existedFee.PaymentStatus == PaymentStatus.Paid)
                 {
-                    return Result<FeeResponseDto>.Failure("Fee", "Fee  already paid", ErrorType.BusinessLogicError);
+                    return Result<FeeResponseDto>.Failure("Fee", "Fee  already paid", null, ErrorType.BusinessLogicError);
                 }
                 var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
@@ -186,18 +191,18 @@ namespace LearningManagementSystem.Application.Implementations
                 }
                 else if (paymentIntent.Status == "requires_action")
                 {
-                    return Result<FeeResponseDto>.Failure(null, "Further authentication required", ErrorType.BusinessLogicError);
+                    return Result<FeeResponseDto>.Failure(null, "Further authentication required", null, ErrorType.BusinessLogicError);
                 }
                 else
                 {
-                    return Result<FeeResponseDto>.Failure(null, "Payment was not successful.", ErrorType.SystemError);
+                    return Result<FeeResponseDto>.Failure(null, "Payment was not successful.", null, ErrorType.SystemError);
                 }
             }
             catch (StripeException ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 var message = $"Exception message: {ex.Message}, Inner: {ex.InnerException?.Message ?? "None"}";
-                return Result<FeeResponseDto>.Failure(null, message, ErrorType.SystemError);
+                return Result<FeeResponseDto>.Failure(null, message, null, ErrorType.SystemError);
             }
             catch (Exception ex)
             {
@@ -215,16 +220,16 @@ namespace LearningManagementSystem.Application.Implementations
        .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser == null)
             {
-                return Result<bool>.Failure("User", "User  cannot be null or not  found", ErrorType.UnauthorizedError);
+                return Result<bool>.Failure("User", "User  cannot be null or not  found", null, ErrorType.UnauthorizedError);
             }
             var rolesOfExistedUser = await _userManager.GetRolesAsync(existedUser);
 
             if (existedUser.Student is null || !rolesOfExistedUser.Contains(RolesEnum.Student.ToString()))
             {
-                return Result<bool>.Failure("User", "User  is not student", ErrorType.UnauthorizedError);
+                return Result<bool>.Failure("User", "User  is not student",null, ErrorType.UnauthorizedError);
             }
             var LatestFee = await _unitOfWork.FeeRepository.GetLaastFeeAsync(s=>s.StudentId==existedUser.Student.Id);
-            if(LatestFee == null) return Result<bool>.Failure("Fee", "Fee  cannot be null or not  found", ErrorType.NotFoundError);
+            if(LatestFee == null) return Result<bool>.Failure("Fee", "Fee  cannot be null or not  found",null, ErrorType.NotFoundError);
             if(LatestFee.PaymentStatus==PaymentStatus.Paid)
               return  Result<bool>.Success(true);
             else
@@ -238,7 +243,7 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<PaginationDto<FeeListItemDto>>.Failure("UserId", "User ID cannot be null", ErrorType.ValidationError);
+                return Result<PaginationDto<FeeListItemDto>>.Failure("UserId", "User ID cannot be null",null, ErrorType.ValidationError);
             }
 
             var feesQuery = await _unitOfWork.FeeRepository.GetQuery(s => s.Student.AppUserId == userId && s.IsDeleted == false, includes: new Func<IQueryable<Fee>, IQueryable<Fee>>[]
@@ -258,10 +263,10 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-                return Result<FeeReturnDto>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+                return Result<FeeReturnDto>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
             }
             var existedFee = await _unitOfWork.FeeRepository.GetEntity(s => s.Id == id & !s.IsDeleted);
-            if (existedFee is null) return Result<FeeReturnDto>.Failure(null, "fee is null", ErrorType.NotFoundError);
+            if (existedFee is null) return Result<FeeReturnDto>.Failure(null, "fee is null", null, ErrorType.NotFoundError);
             var mappedFee=_mapper.Map<FeeReturnDto>(existedFee);
             return Result<FeeReturnDto>.Success(mappedFee);
         }

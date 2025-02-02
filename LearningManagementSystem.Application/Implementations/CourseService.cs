@@ -27,7 +27,7 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if(await _unitOfWork.CourseRepository.isExists(s=>s.Name.ToLower() == courseCreateDto.Name.ToLower()))
             {
-                return Result<CourseCreateOrUpdateReturnDto>.Failure("Name", "There is an already existed course",ErrorType.BusinessLogicError);
+                return Result<CourseCreateOrUpdateReturnDto>.Failure("Name", "There is an already existed course",null, ErrorType.BusinessLogicError);
             }
             
            var MappedCourse=_mapper.Map<Course>(courseCreateDto);
@@ -41,7 +41,7 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-               return Result<CourseReturnDto>.Failure(null, "Invalid GUID provided.",ErrorType.ValidationError);
+               return Result<CourseReturnDto>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
             }
             var ExistedCourse=await _unitOfWork.CourseRepository.GetEntity(s=>s.Id==id&& s.IsDeleted == false,true, includes: new Func<IQueryable<Course>, IQueryable<Course>>[] {
                  query => query
@@ -49,7 +49,7 @@ namespace LearningManagementSystem.Application.Implementations
             });
             if (ExistedCourse is null)
             {
-                return Result<CourseReturnDto>.Failure("Course", "Not found", ErrorType.NotFoundError);
+                return Result<CourseReturnDto>.Failure("Course", "Not found", null, ErrorType.NotFoundError);
             }
             var MappedCourse = _mapper.Map<CourseReturnDto>(ExistedCourse);
             return Result<CourseReturnDto>.Success(MappedCourse);
@@ -58,19 +58,19 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-              return  Result<CourseCreateOrUpdateReturnDto>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+              return  Result<CourseCreateOrUpdateReturnDto>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
             }
             if (courseUpdateDto.Name != null)
             {
                 if (await _unitOfWork.CourseRepository.isExists(s => s.Name.ToLower() == courseUpdateDto.Name.ToLower()))
                 {
-                 return   Result<CourseCreateOrUpdateReturnDto>.Failure("Name", "There is an already existed course", ErrorType.BusinessLogicError);
+                 return   Result<CourseCreateOrUpdateReturnDto>.Failure("Name", "There is an already existed course", null, ErrorType.BusinessLogicError);
                 }
             }
             var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s =>s.Id == id);
             if(ExistedCourse == null)
             {
-             return   Result<CourseCreateOrUpdateReturnDto>.Failure(null, "Course doesnt exist", ErrorType.NotFoundError);
+             return   Result<CourseCreateOrUpdateReturnDto>.Failure(null, "Course doesnt exist", null, ErrorType.NotFoundError);
             }
             _mapper.Map(courseUpdateDto, ExistedCourse);
             await _unitOfWork.CourseRepository.Update(ExistedCourse);
@@ -88,7 +88,7 @@ namespace LearningManagementSystem.Application.Implementations
         {
             var existedCourseResult = await GetCourseById(id);
             var existedCourse = existedCourseResult.Data;
-            if (existedCourse.IsDeleted is true) return Result<string>.Failure("Course", "this already existed",ErrorType.BusinessLogicError);
+            if (existedCourse.IsDeleted is true) return Result<string>.Failure("Course", "this already existed",null, ErrorType.BusinessLogicError);
             existedCourse.IsDeleted = true;
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted");
@@ -98,7 +98,7 @@ namespace LearningManagementSystem.Application.Implementations
             var existedCourseResult = await GetCourseById(id);
             var existedCourse=existedCourseResult.Data;
            var deletingStatus =await _photoOrVideoService.DeleteMediaAsync(existedCourse.ImageUrl, ResourceType.Image);
-            if (deletingStatus != "deleted")return Result<string>.Failure(null, "Error with deleting",ErrorType.SystemError);
+            if (deletingStatus != "deleted")return Result<string>.Failure(null, "Error with deleting",null, ErrorType.SystemError);
       await _unitOfWork.CourseRepository.Delete(existedCourse);
             await _unitOfWork.Commit();
             return Result<string>.Success("Deleted");
@@ -120,7 +120,7 @@ namespace LearningManagementSystem.Application.Implementations
                 foreach (var TeacherId in TeacherIds)
                 {
                     if (!await _unitOfWork.TeacherRepository.isExists(s => s.Id == TeacherId))
-                       return Result<PaginationDto<CourseListItemDto>>.Failure("TeacherId", "TeacherId is invalid", ErrorType.NotFoundError);
+                       return Result<PaginationDto<CourseListItemDto>>.Failure("TeacherId", "TeacherId is invalid",null, ErrorType.NotFoundError);
                     courseQuery = courseQuery.Where(s => s.lessons.Any(s => s.TeacherId == TeacherId));
                 }
             }
@@ -135,12 +135,12 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-                return Result<Course>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+                return Result<Course>.Failure(null, "Invalid GUID provided.", null, ErrorType.ValidationError);
             }
             var ExistedCourse = await _unitOfWork.CourseRepository.GetEntity(s => s.Id == id && s.IsDeleted == false,true);
             if (ExistedCourse is null)
             {
-                return Result<Course>.Failure("Course", "Not found", ErrorType.NotFoundError);
+                return Result<Course>.Failure("Course", "Not found",null, ErrorType.NotFoundError);
             }
             return Result<Course>.Success(ExistedCourse);
         }

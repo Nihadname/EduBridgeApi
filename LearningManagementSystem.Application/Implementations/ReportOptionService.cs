@@ -25,7 +25,7 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if(await _unitOfWork.ReportOptionRepository.isExists(s => s.IsDeleted == false && s.Name.ToLower() == reportOptionCreateDto.Name.ToLower()))
             {
-                return Result<ReportOptionReturnDto>.Failure(null, "This name already exists", ErrorType.BusinessLogicError);
+                return Result<ReportOptionReturnDto>.Failure(null, "This name already exists", null, ErrorType.BusinessLogicError);
             }
             var mappedReportOption = _mapper.Map<ReportOption>(reportOptionCreateDto);
             await _unitOfWork.ReportOptionRepository.Create(mappedReportOption);
@@ -36,7 +36,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<string>> DeleteFromUi(Guid id)
         {
             var reportOptionResult = await GetReportOption(id);
-            if (!reportOptionResult.IsSuccess) return Result<string>.Failure(reportOptionResult.ErrorKey, reportOptionResult.Message, (ErrorType)reportOptionResult.ErrorType);
+            if (!reportOptionResult.IsSuccess) return Result<string>.Failure(reportOptionResult.ErrorKey,  reportOptionResult.Message, reportOptionResult.Errors, (ErrorType)reportOptionResult.ErrorType);
             reportOptionResult.Data.IsDeleted = true;
             await _unitOfWork.ReportOptionRepository.Delete(reportOptionResult.Data);
             await _unitOfWork.Commit();
@@ -45,7 +45,7 @@ namespace LearningManagementSystem.Application.Implementations
         public async Task<Result<string>> Delete(Guid id)
         {
             var reportOptionResult=await GetReportOption(id);
-            if (!reportOptionResult.IsSuccess) return Result<string>.Failure(reportOptionResult.ErrorKey, reportOptionResult.Message, (ErrorType)reportOptionResult.ErrorType);
+            if (!reportOptionResult.IsSuccess) return Result<string>.Failure(reportOptionResult.ErrorKey, reportOptionResult.Message,reportOptionResult.Errors,  (ErrorType)reportOptionResult.ErrorType);
             await _unitOfWork.ReportOptionRepository.Delete(reportOptionResult.Data);
             await _unitOfWork.Commit();
             return Result<string>.Success("deleted");
@@ -54,12 +54,12 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-                return Result<ReportOption>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+                return Result<ReportOption>.Failure(null, "Invalid GUID provided.",null, ErrorType.ValidationError);
             }
             var existedReportOption = await _unitOfWork.ReportOptionRepository.GetEntity(s => s.Id == id && s.IsDeleted == false);
             if (existedReportOption == null)
             {
-                return Result<ReportOption>.Failure("ReportedUserId", "Reported user not found", ErrorType.NotFoundError);
+                return Result<ReportOption>.Failure("ReportedUserId", "Reported user not found", null, ErrorType.NotFoundError);
             }
             return Result<ReportOption>.Success(existedReportOption);
 

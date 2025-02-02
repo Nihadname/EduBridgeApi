@@ -35,18 +35,18 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return Result<NoteReturnDto>.Failure("UserId", "User ID cannot be null", ErrorType.ValidationError);
+                return Result<NoteReturnDto>.Failure("UserId", "User ID cannot be null", null, ErrorType.ValidationError);
             }
             var existedUser = await _userManager.Users
      .Include(u => u.Notes)
        .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser == null)
             {
-                return Result<NoteReturnDto>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
+                return Result<NoteReturnDto>.Failure("User", "User  cannot be null or not  found", null, ErrorType.NotFoundError);
             }
             if (existedUser.Notes.Any(s => s.Title.Equals(noteCreateDto.Title, StringComparison.OrdinalIgnoreCase)))
             {
-                return Result<NoteReturnDto>.Failure("Title", "User already has Title like this", ErrorType.BusinessLogicError);
+                return Result<NoteReturnDto>.Failure("Title", "User already has Title like this", null, ErrorType.BusinessLogicError);
             }
             noteCreateDto.AppUserId = userId;
             var MappedNote = _mapper.Map<Note>(noteCreateDto);
@@ -62,7 +62,7 @@ namespace LearningManagementSystem.Application.Implementations
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<PaginationDto<NoteListItemDto>>.Failure("UserId", "User ID cannot be null", ErrorType.ValidationError);
+                return Result<PaginationDto<NoteListItemDto>>.Failure("UserId", "User ID cannot be null", null, ErrorType.ValidationError);
             }
 
             var notesQuery = await _unitOfWork.NoteRepository.GetQuery(s => s.AppUserId == userId && s.IsDeleted == false);
@@ -83,7 +83,7 @@ namespace LearningManagementSystem.Application.Implementations
             var existedNoteResult = await GetUserWithUserAndIdChecks(Id);
             if (!existedNoteResult.IsSuccess)
             {
-                return Result<string>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message, (ErrorType)existedNoteResult.ErrorType);
+                return Result<string>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message, existedNoteResult.Errors, (ErrorType)existedNoteResult.ErrorType);
             }
             var existedNote = existedNoteResult.Data;
             await _unitOfWork.NoteRepository.Delete(existedNote);
@@ -95,7 +95,7 @@ namespace LearningManagementSystem.Application.Implementations
             var existedNoteResult = await GetUserWithUserAndIdChecks(id);
             if (!existedNoteResult.IsSuccess)
             {
-                return Result<NoteReturnDto>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message, (ErrorType)existedNoteResult.ErrorType);
+                return Result<NoteReturnDto>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message, existedNoteResult.Errors, (ErrorType)existedNoteResult.ErrorType);
             }
             var existedNote = existedNoteResult.Data;
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -104,13 +104,13 @@ namespace LearningManagementSystem.Application.Implementations
                  .FirstOrDefaultAsync(u => u.Id == userId);
             if (existedUser is null)
             {
-                return Result<NoteReturnDto>.Failure("User", "User  cannot be null or not  found", ErrorType.NotFoundError);
+                return Result<NoteReturnDto>.Failure("User", "User  cannot be null or not  found", null, ErrorType.NotFoundError);
             }
             if (noteUpdateDto.Title is not null)
             {
                 if (existedUser.Notes.Any(s => s.Title.Equals(noteUpdateDto.Title, StringComparison.OrdinalIgnoreCase)))
                 {
-                    return Result<NoteReturnDto>.Failure("Title", "User already has Title like this", ErrorType.BusinessLogicError);
+                    return Result<NoteReturnDto>.Failure("Title", "User already has Title like this",null, ErrorType.BusinessLogicError);
 
                 }
             }
@@ -124,12 +124,12 @@ namespace LearningManagementSystem.Application.Implementations
         {
             if (id == Guid.Empty)
             {
-               return Result<Note>.Failure(null, "Invalid GUID provided.", ErrorType.ValidationError);
+               return Result<Note>.Failure(null, "Invalid GUID provided.", null, ErrorType.ValidationError);
             }
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-               return Result<Note>.Failure("Id", "User ID cannot be null", ErrorType.ValidationError);
+               return Result<Note>.Failure("Id", "User ID cannot be null", null, ErrorType.ValidationError);
             }
             var cacheKey = $"Note_{id}";
             var cachedNote = await _cache.GetOrSetAsync<Note>(cacheKey, async _ =>
@@ -139,7 +139,7 @@ namespace LearningManagementSystem.Application.Implementations
             });
             if (cachedNote is null)
             {
-             return   Result<Note>.Failure("Note", "Note not found", ErrorType.NotFoundError);
+             return   Result<Note>.Failure("Note", "Note not found", null, ErrorType.NotFoundError);
             }
             return Result<Note>.Success(cachedNote);
         }
@@ -148,7 +148,7 @@ namespace LearningManagementSystem.Application.Implementations
             var existedNoteResult = await GetUserWithUserAndIdChecks(id);
             if (!existedNoteResult.IsSuccess)
             {
-                return Result<NoteReturnDto>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message, (ErrorType)existedNoteResult.ErrorType);
+                return Result<NoteReturnDto>.Failure(existedNoteResult.ErrorKey, existedNoteResult.Message,existedNoteResult.Errors, (ErrorType)existedNoteResult.ErrorType);
             }
             var existedNote = existedNoteResult.Data;
             var MappedNote = _mapper.Map<NoteReturnDto>(existedNote);
