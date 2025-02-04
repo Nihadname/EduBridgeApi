@@ -22,10 +22,7 @@ namespace LearningManagementSystem.Application.Dtos.Course
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
-        public static explicit operator CourseCreateDto(CreateCourseCommand v)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
     public enum Language
     {
